@@ -5,6 +5,11 @@
 <title>Welcome to Cooking World!</title>
 </head>
 <body>
-	<p>レシピを検索してください</p>
+	<form method="get" action="/search">
+		<input type="text" name="dish-name" placeholder="料理名をどうぞ">
+		<button type="submit">検索</button>
+	</form>
+	
+	<p th:text="${hoge}+'に関する検索結果を表示します'"></p>
 </body>
 </html>
