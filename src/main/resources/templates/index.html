@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Welcome to Cooking World!</title>
+<<<<<<< HEAD
  </head>
  <body>
  	<p>レシピを検索してください</p>
@@ -14,3 +15,15 @@
  	<p th:text="${hoge}+'に関する検索結果を表示します'"></p>
  </body>
  </html>
+=======
+</head>
+<body>
+	<form method="get" action="/search">
+		<input type="text" name="dish-name" placeholder="料理名をどうぞ">
+		<button type="submit">検索</button>
+	</form>
+	
+	<p th:text="${hoge}+'に関する検索結果を表示します'"></p>
+</body>
+</html>
+>>>>>>> 797731b8051effd1f01feff3b067b89fb8531bf7
