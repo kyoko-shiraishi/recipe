@@ -18,7 +18,9 @@ public class Recipe {
 	@Column(length=50,nullable=false)
 	private String name; //レシピと料理名は一対一なのでリレーションなし
 	
+
 	
+
 	
 	@Column
 	private String comment; //レシピとコメントの記述は一対多なのでdescriptionsテーブルにrecipe_id
