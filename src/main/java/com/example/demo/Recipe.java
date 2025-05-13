@@ -18,10 +18,12 @@ public class Recipe {
 	@Column(length=50,nullable=false)
 	private String name; //レシピと料理名は一対一なのでリレーションなし
 	
+
 	
 	//レシピとタグは一対多なのでtagsテーブルにrecipe_id
 	
 	 //レシピと材料は一対多なのでingridientsテーブルにrecipe_id
+
 	
 	@Column
 	private long comment; //レシピとコメントの記述は一対多なのでdescriptionsテーブルにrecipe_id
