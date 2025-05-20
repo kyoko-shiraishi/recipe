@@ -22,7 +22,13 @@ CookingRepository repository;
 public ModelAndView edit(ModelAndView mav,@ModelAttribute Recipe recipe,@PathVariable int id) {
 	mav.setViewName("edit");
 	Optional<Recipe> data = repository.findById((long)id);
-	mav.addObject("formModel",data.get());
+	if(data.isPresent()) {
+		mav.addObject("formModel",data.get());	
+	}else if(data.isEmpty()){
+		mav.addObject("formModel",null);
+		mav.addObject("message","データが見つかりません");
+	}
+	
 	return mav;
 }
 //保存
