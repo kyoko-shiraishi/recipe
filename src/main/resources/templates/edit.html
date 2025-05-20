@@ -7,6 +7,7 @@
 <body>
 	<div th:if="${formModel==null}">
 		<p th:text="${message}"></p>
+	</div>
 			<div th:if="${formModel != null}">
 				<form name="update" action="/edit" method="post" th:object="${formModel}">
 						<input type="hidden" name="id" th:field="*{id}"/>
@@ -19,6 +20,6 @@
 						<input type="submit"  class="btn btn-primary"value="更新"/>
 				</form>
 			</div>
-	</div>
+	
 </body>
 </html>
