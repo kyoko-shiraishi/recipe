@@ -21,7 +21,8 @@ public class NewController {
 	public ModelAndView create(ModelAndView mav) {
 		mav.setViewName("create");
 		mav.addObject("title","新しいレシピを作ってください！");
-		mav.addObject("formModel", new Recipe()); // ← これを追加
+		
+		mav.addObject("formModel", new Recipe()); 
 		return mav;
 	}
 //サーバーに新しいデータを送信
