@@ -10,13 +10,20 @@
 
 	<h1 th:text="${msg}"></h1>
  	<p>レシピを検索してください</p>
- 	<form method="get" action="/search">
+ 	<form method="get" action="/search" th:object="${formModel}">
  		<input type="text" name="dish-name" placeholder="料理名をどうぞ">
  		<button type="submit">検索</button>
  	</form>
  	
- 	<p th:if="${hoge != null and !#strings.isEmpty(hoge)}"
-		th:text="${hoge}+'に関する検索結果を表示します'"></p>
+	<div th:if="${hoge != null and !#strings.isEmpty(hoge)}">
+	    <div th:if="${#lists.isEmpty(data)}">
+	        <p th:text="${hoge} + ' に関するレシピはみつかりません'"></p>
+	    </div>
+	    <div th:unless="${#lists.isEmpty(data)}">
+	        <p th:text="${hoge} + ' に関する検索結果を表示します'"></p>
+	    </div>
+	</div>
+
 		
 		<table class="table">
 		    <thead>

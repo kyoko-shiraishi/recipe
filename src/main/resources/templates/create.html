@@ -6,14 +6,24 @@
 <title th:text="${title}"></title>
 </head>
 <body>
-	<form name="new" action="/create" method="post" th:object="${formModel}">
+	<form name="new" action="/create" method="post" th:object="${formModel}"><style>.err{color:red}</style>
+		<p th:if="${#fields.hasErrors()}"th:text="${msg}" style="color:red;"></p>
+		
+		
 		<label for="dish-name">料理名</label>
-		<input type="text" name="name" id="dish-name" th:field="*{name}">
+		<input type="text" name="name" id="dish-name" th:field="*{name}" >
+		<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" th:errorclass="err">	
+		</div>
 		
 		
 		<label for="dish-comment">コメント</label>
 		<input type="text" name="comment" id="dish-comment" th:field="*{comment}">
+		<div th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}" th:errorclass="err">	
+		</div>
 		<input type="submit"  class="btn btn-primary"value="作成"/>
 	</form>
+	
+	
+
 </body>
 </html>

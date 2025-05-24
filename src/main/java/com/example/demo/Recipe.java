@@ -1,22 +1,27 @@
 package com.example.demo;
 
-import jakarta.persistence.Column; //追記
-import jakarta.persistence.Entity; //追記
-import jakarta.persistence.GeneratedValue; //追記
-import jakarta.persistence.GenerationType; //追記
-import jakarta.persistence.Id; //追記
-import jakarta.persistence.Table; //追記
+import jakarta.persistence.Column; 
+import jakarta.persistence.Entity; 
+import jakarta.persistence.GeneratedValue; 
+import jakarta.persistence.GenerationType; 
+import jakarta.persistence.Id; 
+import jakarta.persistence.Table; 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 
 @Entity
 @Table(name="recipes")
 public class Recipe {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	@Column
+	@Column                         //Nullを禁止するバリデーション追記
+	@NotNull
 	private long id;
 	
 	@Column(length=50,nullable=false)
-	private String name; //レシピと料理名は一対一なのでリレーションなし
+	@NotBlank                     //未入力を禁止するバリデーション追記
+	private String name; 
 	
 
 	
