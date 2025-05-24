@@ -1,21 +1,39 @@
 package com.example.demo;
 
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
+import jakarta.transaction.Transactional;
+import com.example.demo.repository.CookingRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod; //追記
-import org.springframework.web.bind.annotation.RequestParam; ///追記
+import org.springframework.web.bind.annotation.RequestMethod; 
+import org.springframework.web.bind.annotation.RequestParam; 
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+
+import java.util.List;
+
+
+
+
 
  
  @Controller
  public class SearchController {
+	 @Autowired
+		CookingRepository repository;
+	 
  	@RequestMapping(value="/search",method=RequestMethod.GET)
  	//method="get" → ブラウザのURLにクエリパラメータが付く（例：/search?dish-name=鉄粉おにぎり）
- 	//→dish-name という名前の検索パラメータに『鉄粉おにぎり』という値を指定して、/search にアクセス
- 	//クエリパラメータ dish-name を keyword 変数に格納
- 	public String search(@RequestParam("dish-name") String keyword,Model mod) {
- 		mod.addAttribute("hoge",keyword);
- 		return "index";
+ 	
+ 	
+ 	public  ModelAndView search(@ModelAttribute("formModel") Recipe recipe,
+ 			ModelAndView mav,@RequestParam("dish-name") String keyword) {
+ 		mav.setViewName("index");
+ 		mav.addObject("hoge",keyword);
+ 		List<Recipe> search_rslt = repository.findByNameContaining(keyword);
+ 		mav.addObject("data" ,search_rslt);
+ 		return mav;
  	}
  }
 
