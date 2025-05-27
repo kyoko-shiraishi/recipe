@@ -12,7 +12,7 @@ public abstract class Character {
 	}
 	
 	//getter/setter
-	public String getNmae() {
+	public String getName() {
 		return this.name;
 	}
 	public void setName(String name) {
