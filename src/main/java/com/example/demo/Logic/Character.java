@@ -19,9 +19,12 @@ public abstract class Character {
 		this.name = name;
 	}
 	
-	//spreak()
-	public abstract void speak();
-	//act()
+	//発話させる
+	public abstract void speak(String message);
+	//個別の語尾付ける
+	public abstract String getEnd();
+	//動かす
 	public abstract void act();
 	
+
 }

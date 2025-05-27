@@ -5,17 +5,26 @@ public class Ninja extends Character{
 	public Ninja() {
 		super("尊奈門"); //親クラスである Character のコンストラクタを呼び出している。new Ninjaされるときに呼ばれる
 	}
+	
 	@Override
-	public void speak() {
-		System.out.println("諸泉尊奈門だ！！");
+	public void speak(String message) {
+		System.out.println(message+this.getEnd());
 	}
 	
 	@Override
 	public void act() {
 		System.out.println("苦無を投げる");
 	}
+	
+	@Override
+	public String getEnd() {
+		return "ぞ";
+	}
 		public static void main(String[] args) {
-        Character ninja = new Ninja();
-        ninja.act();  // 動作確認
+        Character c = new Ninja();
+        c.act();  // 動作確認
+        AlermTimer timer = new AlermTimer();
+        int timePassed = 1;
+        timer.startTimer(timePassed, c);
     }
 }
