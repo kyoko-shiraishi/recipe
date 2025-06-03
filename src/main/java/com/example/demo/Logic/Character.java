@@ -26,5 +26,8 @@ public abstract class Character {
 	//動かす
 	public abstract void act();
 	
-
+	@Override
+	public String toString() {
+		return "Character{name='" + name + "'}"; //toString()のオーバーライド
+	}
 }

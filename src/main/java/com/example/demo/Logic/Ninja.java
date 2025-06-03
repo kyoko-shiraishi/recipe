@@ -23,6 +23,7 @@ public class Ninja extends Character{
 		public static void main(String[] args) {
         Character c = new Ninja();
         c.act();  // 動作確認
+        System.out.println(c);
         AlermTimer timer = new AlermTimer();
         int timePassed = 1;
         timer.startTimer(timePassed, c);
