@@ -1,6 +1,8 @@
 package com.example.demo.Logic;
 
-public abstract class Character {
+import java.util.Objects;
+
+public abstract class Character implements Cloneable{
 //フィールド
 	protected String name;
 	
@@ -29,5 +31,27 @@ public abstract class Character {
 	@Override
 	public String toString() {
 		return "Character{name='" + name + "'}"; //toString()のオーバーライド
+	}
+	@Override
+	public boolean equals(Object o) {
+		if(o == this)return true; //もし2つのオブジェクトが**まったく同じ実体（参照）**なら、中身が同じに決まっているので true を返す
+		//自分のクラス情報と相手のクラス情報が一致しなければ、別のクラスのインスタンスなので false
+		if(o == null||getClass() != o.getClass())return false;
+		//Object 型なので、キャストして使えるようにする
+		Character other  = (Character) o;
+		//「自分と相手の name が同じ文字列なら、等しいキャラとみなす
+		return this.name.equals(other.name); //これ自体戻り値が boolean 値なのでそのままreturnできる
+	}
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.name);
+	}
+	@Override
+	public Character clone() {
+		try {
+	        return (Character) super.clone();
+	    } catch (CloneNotSupportedException e) {
+	        throw new AssertionError(); // 通常は起きない例外
+	    }
 	}
 }

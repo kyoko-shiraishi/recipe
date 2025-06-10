@@ -20,16 +20,7 @@ public class Ninja extends Character{
 	public String getEnd() {
 		return "ぞ";
 	}
-	@Override
-	public boolean equals(Object o) {
-		if(o == this)return true; //もし2つのオブジェクトが**まったく同じ実体（参照）**なら、中身が同じに決まっているので true を返す
-		//自分のクラス情報と相手のクラス情報が一致しなければ、別のクラスのインスタンスなので false
-		if(o == null||getClass() != o.getClass())return false;
-		//Object 型なので、Ninja 型にキャストして使えるようにする
-		Ninja other  = (Ninja) o;
-		//「自分と相手の name が同じ文字列なら、等しいキャラとみなす
-		return this.name.equals(other.name); //これ自体戻り値が boolean 値なのでそのままreturnできる
-	}
+	
 	
 		public static void main(String[] args) {
         Character c = new Ninja("そんなもん");
