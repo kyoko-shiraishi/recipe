@@ -1,5 +1,7 @@
 package com.example.demo;
 import java.util.List;
+
+
 import java.util.Optional;
 
 import jakarta.transaction.Transactional;
@@ -13,17 +15,22 @@ import org.springframework.web.servlet.ModelAndView;
 import com.example.demo.Recipe;
 import com.example.demo.repository.CookingRepository;
 import org.springframework.web.bind.annotation.RequestParam;
+import com.example.demo.Services.RecipeService;
 
 @Controller
 public class DeleteController {
-	@Autowired
-	CookingRepository repository;
+	
+	private final RecipeService recipeService;
+	public DeleteController(RecipeService recipeService) {
+		this.recipeService = recipeService;
+	}
+	
 	//特定のIDのリソースを画面表示
 	@RequestMapping(value="/delete/{id}",method= RequestMethod.GET)
 	public ModelAndView delete(@PathVariable int id,ModelAndView mav) {
 		mav.setViewName("delete");
 		mav.addObject("msg","どのレシピを削除しますか？");
-		Optional<Recipe> data = repository.findById((long)id);
+		Optional<Recipe> data = recipeService.findById((long)id);
 		if(data.isPresent()) {
 			mav.addObject("formModel",data.get());
 		}else if(data.isEmpty()){
@@ -34,9 +41,9 @@ public class DeleteController {
 	}
 	
 	@PostMapping("/delete_clicked")
-	@Transactional
+	
 	public ModelAndView remove(@RequestParam long id,ModelAndView mav) {
-		repository.deleteById(id);
+		recipeService.deleteById(id);
 		return new ModelAndView("redirect:/");
 	}
 }

@@ -1,6 +1,7 @@
 package com.example.demo;
 import jakarta.transaction.Transactional;
 
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -10,15 +11,16 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 
-
-import com.example.demo.repository.CookingRepository;
+import com.example.demo.Services.RecipeService;
 
 @Controller
 
 
 public class NewController {
-	@Autowired
-	CookingRepository repository;
+	public final RecipeService recipeService;
+	public NewController(RecipeService recipeService) {
+		this.recipeService = recipeService;
+	}
 //Createページを表示
 	@RequestMapping(value="/create")
 	public ModelAndView create(ModelAndView mav) {
@@ -30,7 +32,7 @@ public class NewController {
 	}
 //サーバーに新しいデータを送信
 	
-	@Transactional
+	
 	@PostMapping("/create")
 	public ModelAndView post(
 	    @ModelAttribute("formModel") @Validated Recipe recipe, 
@@ -42,7 +44,7 @@ public class NewController {
 
 	    if (!result.hasErrors()) {
 	        // エラーがなければ保存してトップページへリダイレクト
-	        repository.saveAndFlush(recipe);
+	        recipeService.saveAndFlush(recipe);
 	        res = new ModelAndView("redirect:/");
 	    } else {
 	        // エラーがあれば作成ページに戻して、エラーメッセージを表示

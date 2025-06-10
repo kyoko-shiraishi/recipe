@@ -14,7 +14,9 @@ public abstract class Character implements Cloneable{
 	}
 	
 	//getter/setter
-	public String getName() {
+
+	public String getNmae() {
+
 		return this.name;
 	}
 	public void setName(String name) {
@@ -49,7 +51,11 @@ public abstract class Character implements Cloneable{
 	@Override
 	public Character clone() {
 		try {
-	        return (Character) super.clone();
+
+			//親クラス (Object) の clone() メソッドを呼び出し
+			//→現在のオブジェクトのフィールド内容をコピーした新しいオブジェクト(Object型)を生成
+	        return (Character) super.clone(); 
+
 	    } catch (CloneNotSupportedException e) {
 	        throw new AssertionError(); // 通常は起きない例外
 	    }
