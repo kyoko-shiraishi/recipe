@@ -7,5 +7,6 @@ import com.example.demo.Recipe;
 import java.util.Optional;
 
 public interface CookingRepository extends JpaRepository<Recipe,Long>{
+	
 public List<Recipe> findByNameContaining(String name);
 }

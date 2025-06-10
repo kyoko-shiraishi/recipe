@@ -1,5 +1,6 @@
 package com.example.demo;
 import java.util.List;
+
 import java.util.Optional;
 
 import jakarta.transaction.Transactional;
@@ -13,15 +14,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 import com.example.demo.Recipe;
 import com.example.demo.repository.CookingRepository;
+import com.example.demo.Services.RecipeService;
 
 @Controller
 public class UpdateController {
-@Autowired
-CookingRepository repository;
+	public final RecipeService recipeService;
+public UpdateController(RecipeService recipeService) {
+	this.recipeService = recipeService;
+}
 @RequestMapping("/edit/{id}")
 public ModelAndView edit(ModelAndView mav,@ModelAttribute Recipe recipe,@PathVariable int id) {
 	mav.setViewName("edit");
-	Optional<Recipe> data = repository.findById((long)id);
+	Optional<Recipe> data = recipeService.findById((long)id);
 	if(data.isPresent()) {
 		mav.addObject("formModel",data.get());	
 	}else if(data.isEmpty()){
@@ -33,9 +37,9 @@ public ModelAndView edit(ModelAndView mav,@ModelAttribute Recipe recipe,@PathVar
 }
 //保存
 @PostMapping("/edit")
-@Transactional
+
 public ModelAndView update(@ModelAttribute Recipe recipe,ModelAndView mav) {
-	repository.saveAndFlush(recipe);
+	recipeService.saveAndFlush(recipe);
 	return new ModelAndView("redirect:/");
 }
 }
