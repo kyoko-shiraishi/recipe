@@ -15,13 +15,15 @@
 		<div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" th:errorclass="err">	
 		</div>
 		
-		
+		<label for="main_img" >メイン画像(path)</label>
+			<input type="text" name="main_img" th;field="*{step_img}">
+			
 		<label for="dish-comment">コメント</label>
 			<input type="text" name="comment" id="dish-comment" th:field="*{comment}">
 		<div th:if="${#fields.hasErrors('comment')}" th:errors="*{comment}" th:errorclass="err">	
 		</div>
 		
-		
+		<label for="dish-comment"></label>
 	</form>
 	
 	
