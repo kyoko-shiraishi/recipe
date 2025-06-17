@@ -27,7 +27,7 @@ public class NewController {
 		mav.setViewName("create");
 		mav.addObject("title","新しいレシピを作ってください！");
 		
-		mav.addObject("formModel", new Recipe()); 
+		mav.addObject("recipe_request", new RecipeRequest()); 
 		return mav;
 	}
 //サーバーに新しいデータを送信
@@ -35,7 +35,7 @@ public class NewController {
 	
 	@PostMapping("/create")
 	public ModelAndView post(
-	    @ModelAttribute("formModel") @Validated Recipe recipe, 
+	    @ModelAttribute("recipe_request") @Validated RecipeRequest recipe_request, 
 	    BindingResult result,
 	    ModelAndView mav) {
 
@@ -44,7 +44,7 @@ public class NewController {
 
 	    if (!result.hasErrors()) {
 	        // エラーがなければ保存してトップページへリダイレクト
-	        recipeService.saveAndFlush(recipe);
+	        recipeService.createFromForm(recipe_request);
 	        res = new ModelAndView("redirect:/");
 	    } else {
 	        // エラーがあれば作成ページに戻して、エラーメッセージを表示

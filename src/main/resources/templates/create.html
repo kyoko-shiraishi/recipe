@@ -6,7 +6,7 @@
 <title th:text="${title}"></title>
 </head>
 <body>
-	<form name="new" action="/create" method="post" th:object="${formModel}"><style>.err{color:red}</style>
+	<form name="new" action="/create" method="post" th:object="${recipe_request}"><style>.err{color:red}</style>
 		<p th:if="${#fields.hasErrors()}"th:text="${msg}" style="color:red;"></p>
 		
 		
