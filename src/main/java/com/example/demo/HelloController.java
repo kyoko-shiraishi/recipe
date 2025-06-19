@@ -34,6 +34,9 @@ public class HelloController {
 	public ModelAndView show(ModelAndView mav,@PathVariable int id) {
 		mav.setViewName("recipe");
 		Optional<Recipe> OptionalData = recipeService.findById(id);
+		//findByIｄのStepクラスバージョン
+		List<Step> stepData = recipeService.findByRecipeId(id);
+		mav.addObject("steps",stepData);
 		if(OptionalData.isPresent()) {
 			Recipe data = OptionalData.get();
 			mav.addObject("recipe",data);

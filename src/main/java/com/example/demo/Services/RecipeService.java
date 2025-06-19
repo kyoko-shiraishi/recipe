@@ -1,6 +1,7 @@
 package com.example.demo.Services;
 import java.util.List;
 
+
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -30,6 +31,9 @@ public RecipeService(CookingRepository repository,ImgRepository img_repository,S
 public Optional<Recipe> findById(long id) {
 	//リポジトリの既存メソッドを引数渡して呼び出す
 	return repository.findById(id);
+}
+public List<Step> findByRecipeId(long recipe_id) {
+	return step_repository.findByRecipeId(recipe_id);
 }
 @Transactional
 public void deleteById(long id) {

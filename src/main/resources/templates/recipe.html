@@ -14,7 +14,7 @@
 	<p>コメント</p>
 	<p th:text="${recipe.comment}"></p>
 	<p>作り方</p>
-	<div th:each="step:${recipe.steps}">
+	<div th:each="step:${steps}">
 		<h3>手順[[step.step_number]]</h3>
 		<p th:text="${step.content}"></p>
 		<p>画像[[step.step_number]]</p>
