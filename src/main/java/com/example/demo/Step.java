@@ -1,6 +1,7 @@
 package com.example.demo;
 import jakarta.persistence.Column; 
 
+
 import jakarta.persistence.Entity; 
 import jakarta.persistence.GeneratedValue; 
 import jakarta.persistence.GenerationType; 
@@ -20,7 +21,14 @@ public class Step {
 	private int step_number;
 	@Column
 	private String content;
-	@Column 
+	//Recipeクラスとリレーション(多対一)
+	@ManyToOne
+	@JoinColumn(name="recipe_id",nullable=false)
+	private Recipe recipe;
+		
+	@ManyToOne
+	@JoinColumn(name="img_id",nullable=true)
+		private Img img;
 	
 	public long getId() {
 		return this.id;
@@ -40,14 +48,7 @@ public class Step {
 	public void setContent(String content) {
 		this.content = content;
 	}
-	//Recipeクラスとリレーション(多対一)
-	@ManyToOne
-	@JoinColumn(name="recipe_id",nullable=false)
-	private Recipe recipe;
 	
-	@OneToOne
-	@JoinColumn(name="img_id",nullable=true)
-	private Img img;
 	
 	public Recipe getRecipe() {
 		return recipe;

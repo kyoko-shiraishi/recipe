@@ -1,13 +1,15 @@
 package com.example.demo;
 
 import jakarta.persistence.Column; 
+
 import jakarta.persistence.Entity; 
 import jakarta.persistence.GeneratedValue; 
 import jakarta.persistence.GenerationType; 
 import jakarta.persistence.Id; 
 import jakarta.persistence.Table; 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.persistence.ManyToOne; //追記
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 
 
 @Entity
@@ -16,17 +18,19 @@ public class Recipe {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column                         //Nullを禁止するバリデーション追記
-	@NotNull
+	
 	private long id;
 	
 	@Column(length=50,nullable=false)
-	@NotBlank                     //未入力を禁止するバリデーション追記
+	                  //未入力を禁止するバリデーション追記
 	private String name; 
 
 	@Column
 	private String comment; //レシピとコメントの記述は一対多なのでdescriptionsテーブルにrecipe_id
 	
-
+	@OneToOne
+	@JoinColumn(name = "main_img_id")
+	private Img mainImg; //画像に関する情報
 	
 	
 	public long getId() {
@@ -46,6 +50,12 @@ public class Recipe {
 	}
 	public void setComment(String comment) {
 		this.comment = comment;
+	}
+	public Img getMainImg() {
+		return mainImg;
+	}
+	public void setMainImg(Img mainImg) {
+		this.mainImg = mainImg;
 	}
 	
 }

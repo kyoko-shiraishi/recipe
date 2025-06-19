@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
+
 
 import com.example.demo.Services.RecipeService;
 
@@ -24,10 +24,14 @@ public class NewController {
 //Createページを表示
 	@RequestMapping(value="/create")
 	public ModelAndView create(ModelAndView mav) {
+		RecipeRequest recipeRequest = new RecipeRequest();
+		// step_imgに空文字列をいくつか用意しておく
+	    recipeRequest.getStepImg().add(null); // step_img[0]
+	    recipeRequest.getStepDescription().add(null);
 		mav.setViewName("create");
 		mav.addObject("title","新しいレシピを作ってください！");
 		
-		mav.addObject("recipe_request", new RecipeRequest()); 
+		mav.addObject("recipe_request", recipeRequest); 
 		return mav;
 	}
 //サーバーに新しいデータを送信
@@ -35,29 +39,15 @@ public class NewController {
 	
 	@PostMapping("/create")
 	public ModelAndView post(
-	    @ModelAttribute("recipe_request") @Validated RecipeRequest recipe_request, 
-	    BindingResult result,
+	    @ModelAttribute("recipe_request")  RecipeRequest recipe_request, 
 	    ModelAndView mav) {
 
-	    ModelAndView res = null;
-	    System.out.println(result.getFieldErrors());  // バリデーションエラーをログ出力
-
-	    if (!result.hasErrors()) {
-	        // エラーがなければ保存してトップページへリダイレクト
+			ModelAndView res = mav;
 	        recipeService.createFromForm(recipe_request);
 	        res = new ModelAndView("redirect:/");
-	    } else {
-	        // エラーがあれば作成ページに戻して、エラーメッセージを表示
-	        mav.setViewName("create");
-	        mav.addObject("msg", "入力内容にエラーがあります。再確認してください。");
-
-	        // 必要に応じて、データ一覧も再読み込み（あれば）
-	        // Iterable<Recipe> list = repository.findAll();
-	        // mav.addObject("data", list);
-//mav に設定した内容を、返す用の変数 res に代入する
-	        res = mav;
+	        return res;
 	    }
-	    return res;
+	   
 	}
 
-}
+
