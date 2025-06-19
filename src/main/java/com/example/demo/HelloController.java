@@ -1,5 +1,6 @@
 package com.example.demo;
 import java.util.List;
+import java.util.Optional;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,7 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import com.example.demo.repository.CookingRepository;
 import com.example.demo.Services.RecipeService;
 
@@ -28,7 +29,19 @@ public class HelloController {
 		return mav;
 		
 	}
-	
+	//特定リソースをGET
+	@RequestMapping("/recipe/{id}")
+	public ModelAndView show(ModelAndView mav,@PathVariable int id) {
+		mav.setViewName("recipe");
+		Optional<Recipe> OptionalData = recipeService.findById(id);
+		if(OptionalData.isPresent()) {
+			Recipe data = OptionalData.get();
+			mav.addObject("recipe",data);
+		}else {
+			mav.addObject("errorMsg","データがありません");
+		}
+		return mav;
+	}
 	
 }
 

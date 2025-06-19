@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+
+<div th:if="recipe != null">
+	<p>レシピ名</p>
+	<p th:text="${recipe.name}"></p>
+	<p>完成画像</p>
+	<p th:text="${recipe.mainImg}"></p>
+	<p>コメント</p>
+	<p th:text="${recipe.comment}"></p>
+	<p>作り方</p>
+	<div th:each="step:${recipe.steps}">
+		<h3>手順[[step.step_number]]</h3>
+		<p th:text="${step.content}"></p>
+		<p>画像[[step.step_number]]</p>
+		<p th:text="${step.img}"></p>
+	</div>
+</div>
+<div th:if="errorMsg != null">
+	<p th:text="${errorMsg}"></p>
+</div>
+</body>
+</html>

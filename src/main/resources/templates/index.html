@@ -25,18 +25,15 @@
 	</div>
 
 		
-		<table class="table">
-		    <thead>
-		      <tr><th>ID</th><th>Name</th><th>Comment</th></tr>
-		    </thead>
-		    <tbody>
+		
+		   
+		      <h3>Name</h3>
+		   
 		    
-		      <tr th:each="item : ${data}">
-		        <td th:text="${item.id}"></td>
-		        <td th:text="${item.name}"></td>
-		        <td th:text="${item.comment}"></td>
-		      </tr>
-		    </tbody>
-		  </table>
+		      <div th:each="item : ${data}">
+		        <p th:text="${item.name}"></p>
+		        
+		      </div>
+		   
  </body>
  </html>
