@@ -11,8 +11,8 @@ import com.example.demo.Recipe;
 import com.example.demo.repository.CookingRepository;
 import com.example.demo.repository.ImgRepository;
 import com.example.demo.repository.StepRepository;
-import com.example.demo.RecipeRequest;
 import com.example.demo.Step;
+import com.example.demo.DTO.RecipeRequest;
 import com.example.demo.Img;
 import java.util.Map;
 import java.util.HashMap;
@@ -64,38 +64,42 @@ public void createFromForm(RecipeRequest recipe_request) {
 		recipe.setName(recipe_request.getName()); 
 		recipe.setComment(recipe_request.getComment());
 		recipe.setMainImg(mainImg);
-		repository.saveAndFlush(recipe);
+		repository.saveAndFlush(recipe);//recipe_id を発番（@GeneratedValue により）し、この後 Step で外部キーに使われる
 		//DTOから手順リストと手順につかう画像リストをget
 		List<String> description = recipe_request.getStepDescription();
 		List<String> imges = recipe_request.getStepImg();
 		//リストの要素をひとつずつレコードにget,set,save!
+		int stepNum = 1;
+
 		for (int i = 0; i < description.size(); i++) {
-	    Step step = new Step();
-	    step.setStepNumber(i+1);
-	    step.setContent(description.get(i));
-	    step.setRecipe(recipe);
+		    String desc = description.get(i);
+		    if (desc == null || desc.trim().isEmpty()) continue; // 処理をスキップして次のiに進む
 
-	    if(imges != null && imges.size() > i && imges.get(i) != null) {
-	    String path = imges.get(i);
-	    //Imgをグローバル変数で宣言しておき、マップに既に画像があるかないかで場合分け
-	    if(path !=null) {
-	    Img img;
-	    if(imgMap.containsKey(path)) {
-    	//マップに既存のデータがあればそれをimgに格納してimgを保存
-    	img = imgMap.get(path);
-    		}else {
-    			img = new Img();
-    			img.setPath(path);
-    			imgMap.put(path, img);
-    			img_repository.saveAndFlush(img);
-    		}
-    	
-    	step.setImg(img);
-	    }
+		    Step step = new Step();
+		    step.setStepNumber(stepNum++); 
+		    step.setContent(desc);
+		    step.setRecipe(recipe);
 
-	   }
-	    step_repository.saveAndFlush(step);
-	}
+		    // 画像の処理
+		    if (imges != null && imges.size() > i) {
+		        String path = imges.get(i);
+		        if (path != null && !path.trim().isEmpty()) {
+		            Img img;
+		            if (imgMap.containsKey(path)) {
+		                img = imgMap.get(path);
+		            } else {
+		                img = new Img();
+		                img.setPath(path);
+		                imgMap.put(path, img);
+		                img_repository.saveAndFlush(img);
+		            }
+		            step.setImg(img);
+		        }
+		    }
+
+		    step_repository.saveAndFlush(step);
+		}
+
 }
 //特定のリソース表示
 }

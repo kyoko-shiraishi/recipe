@@ -24,16 +24,15 @@
 	    </div>
 	</div>
 
-		
-		
-		   
-		      <h3>Name</h3>
+
+		      <h3>レシピ</h3>
 		   
 		    
 		      <div th:each="item : ${data}">
+				<a th:href="@{/recipe/{id}(id=${item.id})}">
 		        <p th:text="${item.name}"></p>
-		        
+				</a>
 		      </div>
-		   
+	<a th:href="@{/create}"><button type"button">レシピをつくる</button></a>	   
  </body>
  </html>

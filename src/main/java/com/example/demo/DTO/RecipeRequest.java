@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.DTO;
 import java.util.List;
 import java.util.ArrayList;
 //レシピ名・コメント・手順リスト・画像リストなどフォームからの情報を格納するDTOプロパティ

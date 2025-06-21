@@ -23,13 +23,13 @@ public UpdateController(RecipeService recipeService) {
 	this.recipeService = recipeService;
 }
 @RequestMapping("/edit/{id}")
-public ModelAndView edit(ModelAndView mav,@ModelAttribute Recipe recipe,@PathVariable int id) {
+public ModelAndView edit(ModelAndView mav,@PathVariable int id) {
 	mav.setViewName("edit");
 	Optional<Recipe> data = recipeService.findById((long)id);
 	if(data.isPresent()) {
-		mav.addObject("formModel",data.get());	
+		mav.addObject("recipe",data.get());	
 	}else if(data.isEmpty()){
-		mav.addObject("formModel",null);
+		mav.addObject("data",null);
 		mav.addObject("message","データが見つかりません");
 	}
 	

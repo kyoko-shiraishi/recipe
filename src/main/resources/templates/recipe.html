@@ -7,22 +7,25 @@
 <body>
 
 <div th:if="recipe != null">
-	<p>レシピ名</p>
+	<h3>レシピ名</h3>
 	<p th:text="${recipe.name}"></p>
-	<p>完成画像</p>
+	<h3>完成画像</h3>
 	<p th:text="${recipe.mainImg}"></p>
-	<p>コメント</p>
+	<h3>コメント</h3>
 	<p th:text="${recipe.comment}"></p>
-	<p>作り方</p>
+	<h3>作り方</h3>
 	<div th:each="step:${steps}">
-		<h3>手順[[step.step_number]]</h3>
+		<h3 th:text="${'手順'+step.stepNumber}"></h3>
 		<p th:text="${step.content}"></p>
-		<p>画像[[step.step_number]]</p>
+		<div th:if="${step.img !=null}">
+		<h3 th:text="${'画像'+step.stepNumber}"></h3>
 		<p th:text="${step.img}"></p>
+		</div>
 	</div>
 </div>
 <div th:if="errorMsg != null">
 	<p th:text="${errorMsg}"></p>
 </div>
+<a th:href="@{/edit/{id}(id=recipe.id)}"><button>このレシピを編集する</button></a>
 </body>
 </html>

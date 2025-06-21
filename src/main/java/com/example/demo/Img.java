@@ -28,4 +28,9 @@ public class Img {
 	public void setPath(String path) {
 		this.path=path;
 	}
+	
+	@Override
+	public String toString() {
+	    return this.path;  // 例えば画像のパスを返すようにする
+	}
 }
