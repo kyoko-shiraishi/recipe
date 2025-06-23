@@ -31,7 +31,7 @@ public class HelloController {
 	}
 	//特定リソースをGET
 	@RequestMapping("/recipe/{id}")
-	public ModelAndView show(ModelAndView mav,@PathVariable int id) {
+	public ModelAndView show(ModelAndView mav,@PathVariable Long id) {
 		mav.setViewName("recipe");
 		Optional<Recipe> OptionalData = recipeService.findById(id);
 		//findByIｄのStepクラスバージョン

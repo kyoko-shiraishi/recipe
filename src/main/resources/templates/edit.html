@@ -12,28 +12,51 @@
 				<form name="update" action="/edit" method="post" th:object="${recipe}">
 					
 						<input type="hidden"  th:field="*{id}">
-						<p th:text="${recipe.name}"></p>
-						<input type="text" th:field="*{name}">
+						<h3>レシピ名</h3>
+						<input type="text" th:placeholder="${recipe.name}" ></input>
 						
-						<p th:text="${recipe.comment}"></p>
-						<input type="text" th:field="*{comment}">
+						<h3>コメント</h3>
+						<input type="text" th:placeholder="${recipe.comment}"></input>
 						
-						<h3>手順</h3>
-						<div th:each="step,iterStat:${steps}">
-							<p th:text="${'手順'+step.stepNumber}"></p>
-							<p th:text="${step.content}"></p>
-							<input type="text" th:field="*{stepDescription[__${iterStat.index}__]}">
-								<div th:if="${step.img !=null}">
+						
+						<h3>作り方</h3>
+						<div class="step_container">
+							<div th:each="step,iterStat:${steps}" class="step_block">
+							
+									<h3 th:text="${'手順'+step.stepNumber}"></h3>
+									<input type="text" th:placeholder="${step.content}"></input>
+				
+									<div th:if="${step.img !=null}">
 									<h3 th:text="${'画像'+step.stepNumber}"></h3>
 									<p th:text="${step.img}"></p>
-								</div>
-								<p th:text="${'手順'+step.stepNumber}" ></p>
-								<input type="text" th:field="*{stepImg[__${iterStat.index}__]}">
+									</div>	
+								
+							</div>
 						</div>
+						<p></p>
 						
+						<p></p>
 						<input type="submit"  value="更新"/>
+						<input type="hidden" id="lastNumber"
+						th:value="${steps[steps.size()-1].stepNumber}">
 				</form>
+				<button onclick="addStep()">+手順追加</button>
 			</div>
 	
 </body>
+<script>
+	let stepIndex=parseInt(document.getElementById('lastNumber').value)+1;
+	function addStep(){
+	const stepContainer=document.querySelector('.step_container');
+	const stepBlock = document.createElement('div');
+	stepBlock.innerHTML=`
+	<h3>手順${stepIndex}</h3>
+	<input type="text" placeholder="新しい手順を書いてください">
+	<h3>画像${stepIndex}</h3>
+	<input type="text" placeholder="新しい画像を入力してください">
+	`;
+	stepContainer.appendChild(stepBlock);
+	stepIndex++;
+	}
+</script>
 </html>

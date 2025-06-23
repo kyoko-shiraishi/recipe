@@ -22,10 +22,11 @@
 		<p th:text="${step.img}"></p>
 		</div>
 	</div>
+	<a th:href="@{/edit/{id}(id=${recipe.id})}"><button>このレシピを編集する</button></a>
 </div>
 <div th:if="errorMsg != null">
 	<p th:text="${errorMsg}"></p>
 </div>
-<a th:href="@{/edit/{id}(id=recipe.id)}"><button>このレシピを編集する</button></a>
+
 </body>
 </html>

@@ -23,7 +23,7 @@ public UpdateController(RecipeService recipeService) {
 	this.recipeService = recipeService;
 }
 @RequestMapping("/edit/{id}")
-public ModelAndView edit(ModelAndView mav,@PathVariable int id) {
+public ModelAndView edit(ModelAndView mav,@PathVariable Long id) {
 	mav.setViewName("edit");
 	Optional<Recipe> data = recipeService.findById((long)id);
 	List<Step> steps = recipeService.findByRecipeId(id);
@@ -45,3 +45,8 @@ public ModelAndView update(@ModelAttribute Recipe recipe,ModelAndView mav) {
 	return new ModelAndView("redirect:/");
 }
 }
+//IDをそのままレシピページからもらう
+//DTOに更新データ収集
+//name,comment,mainImgの更新→Recipeテーブルの中のIDで該当するものを抜き出し、変更のあるものを差分更新
+//手順に関してもStepテーブルの中でrecipe_idが該当するものを抜き出し変更のある手順のみ差分更新
+//画像に関しても同様
