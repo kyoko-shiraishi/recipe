@@ -26,8 +26,11 @@ public UpdateController(RecipeService recipeService) {
 public ModelAndView edit(ModelAndView mav,@PathVariable int id) {
 	mav.setViewName("edit");
 	Optional<Recipe> data = recipeService.findById((long)id);
+	List<Step> steps = recipeService.findByRecipeId(id);
+	mav.addObject("steps",steps);
 	if(data.isPresent()) {
 		mav.addObject("recipe",data.get());	
+		
 	}else if(data.isEmpty()){
 		mav.addObject("data",null);
 		mav.addObject("message","データが見つかりません");
@@ -37,7 +40,6 @@ public ModelAndView edit(ModelAndView mav,@PathVariable int id) {
 }
 //保存
 @PostMapping("/edit")
-
 public ModelAndView update(@ModelAttribute Recipe recipe,ModelAndView mav) {
 	recipeService.saveAndFlush(recipe);
 	return new ModelAndView("redirect:/");

@@ -8,16 +8,30 @@
 	<div th:if="${data==null}">
 		<p th:text="${message}"></p>
 	</div>
-			<div th:if="${formModel != null}">
-				<form name="update" action="/edit" method="post" th:object="${formModel}">
-						<input type="hidden" name="id" th:field="*{id}"/>
-						<label for="dish-name">料理名</label>
-						<input type="text" name="name" id="dish-name" th:field="*{name}">
+			<div th:if="${recipe != null}">
+				<form name="update" action="/edit" method="post" th:object="${recipe}">
+					
+						<input type="hidden"  th:field="*{id}">
+						<p th:text="${recipe.name}"></p>
+						<input type="text" th:field="*{name}">
 						
+						<p th:text="${recipe.comment}"></p>
+						<input type="text" th:field="*{comment}">
 						
-						<label for="dish-comment">コメント</label>
-						<input type="text" name="comment" id="dish-comment" th:field="*{comment}">
-						<input type="submit"  class="btn btn-primary"value="更新"/>
+						<h3>手順</h3>
+						<div th:each="step,iterStat:${steps}">
+							<p th:text="${'手順'+step.stepNumber}"></p>
+							<p th:text="${step.content}"></p>
+							<input type="text" th:field="*{stepDescription[__${iterStat.index}__]}">
+								<div th:if="${step.img !=null}">
+									<h3 th:text="${'画像'+step.stepNumber}"></h3>
+									<p th:text="${step.img}"></p>
+								</div>
+								<p th:text="${'手順'+step.stepNumber}" ></p>
+								<input type="text" th:field="*{stepImg[__${iterStat.index}__]}">
+						</div>
+						
+						<input type="submit"  value="更新"/>
 				</form>
 			</div>
 	
