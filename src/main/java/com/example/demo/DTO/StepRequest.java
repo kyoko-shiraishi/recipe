@@ -1,10 +1,11 @@
 package com.example.demo.DTO;
+import com.example.demo.*;
 
 public class StepRequest {
     private Long id;           // DBにある既存手順のID（新規追加ならnull）
     private int stepNumber;    // 表示順
     private String content;    // 手順内容
-    private String imgPath;    // 画像パス（文字列）
+    private String img;    // 画像パス（文字列）
 
     // --- getter ---
     public Long getId() {
@@ -19,8 +20,8 @@ public class StepRequest {
         return content;
     }
 
-    public String getImgPath() {
-        return imgPath;
+    public String getImg() {
+        return img;
     }
 
     // --- setter ---
@@ -36,7 +37,7 @@ public class StepRequest {
         this.content = content;
     }
 
-    public void setImgPath(String imgPath) {
-        this.imgPath = imgPath;
+    public void setImg(String img) {
+        this.img = img;
     }
 }

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
 <title>レシピの変更</title>
@@ -8,27 +8,33 @@
 	<div th:if="${data==null}">
 		<p th:text="${message}"></p>
 	</div>
-			<div th:if="${recipe != null}">
-				<form name="update" action="/edit" method="post" th:object="${recipe}">
+			<div th:if="${recipeRequest != null}">
+				<!--recipeRequest というDTOにバインドしてフォームを生成-->
+				<!--以降の th:field="*{プロパティ}" はすべてこの recipeRequest をベースにする-->
+				<form name="update" action="/edit" method="post" th:object="${recipeRequest}">
 					
 						<input type="hidden"  th:field="*{id}">
 						<h3>レシピ名</h3>
-						<input type="text" th:placeholder="${recipe.name}" ></input>
+						<input type="text" th:field="*{name}" ></input>
 						
 						<h3>コメント</h3>
-						<input type="text" th:placeholder="${recipe.comment}"></input>
+						<input type="text" th:field="*{comment}"></input>
 						
-						
+						<h3>完成画像</h3>
+						<input type="text" th:field="*{mainImg}">
 						<h3>作り方</h3>
 						<div class="step_container">
-							<div th:each="step,iterStat:${steps}" class="step_block">
-							
+							<!--iterStat.index で 0 からのインデックス番号-->
+							<div th:each="step,iterStat : *{steps}" class="step_block">
 									<h3 th:text="${'手順'+step.stepNumber}"></h3>
-									<input type="text" th:placeholder="${step.content}"></input>
-				
+									<!--steps[0].id, steps[1].id のように番号付きで送信される-->
+									<input type="hidden" th:field="*{steps[__${iterStat.index}__].id}" />
+									<input type="text" th:field="*{steps[__${iterStat.index}__].content}" />
+									<input type="hidden" th:field="*{steps[__${iterStat.index}__].stepNumber}" />
+									
 									<div th:if="${step.img !=null}">
 									<h3 th:text="${'画像'+step.stepNumber}"></h3>
-									<p th:text="${step.img}"></p>
+									<input type="text" th:field="*{steps[__${iterStat.index}__].img}" />
 									</div>	
 								
 							</div>
@@ -37,26 +43,41 @@
 						
 						<p></p>
 						<input type="submit"  value="更新"/>
-						<input type="hidden" id="lastNumber"
-						th:value="${steps[steps.size()-1].stepNumber}">
+						<input type="hidden" id="lastNumber" 
+						th:value="${recipeRequest.steps[recipeRequest.steps.size()-1].stepNumber}" />
 				</form>
 				<button onclick="addStep()">+手順追加</button>
 			</div>
 	
 </body>
 <script>
-	let stepIndex=parseInt(document.getElementById('lastNumber').value)+1;
-	function addStep(){
-	const stepContainer=document.querySelector('.step_container');
-	const stepBlock = document.createElement('div');
-	stepBlock.innerHTML=`
-	<h3>手順${stepIndex}</h3>
-	<input type="text" placeholder="新しい手順を書いてください">
-	<h3>画像${stepIndex}</h3>
-	<input type="text" placeholder="新しい画像を入力してください">
-	`;
-	stepContainer.appendChild(stepBlock);
-	stepIndex++;
-	}
+	//ページの HTML がすべて読み込まれたときに処理を始めるイベント
+	window.addEventListener('DOMContentLoaded', () => {
+	    const lastNumberInput = document.getElementById('lastNumber');
+	    let stepIndex = 1; // デフォルト値
+
+	    if (lastNumberInput && lastNumberInput.value) {//lastNumberInput が存在し、かつ value が空でない場合
+	        stepIndex = parseInt(lastNumberInput.value) + 1;//value を数値に変換（parseInt）し、+1 して次に追加する手順の番号を設定
+	    }
+
+	    window.addStep = function () {
+	        const stepContainer = document.querySelector('.step_container');
+	        const index = document.querySelectorAll('.step_block').length;
+//div 要素を作成して、それにクラス step_block を付ける。これが1つの手順欄の枠になる
+	        const stepBlock = document.createElement('div');
+	        stepBlock.className = 'step_block';
+	        stepBlock.innerHTML = `
+	            <h3>手順${stepIndex}</h3>
+	            <input type="hidden" name="steps[${index}].id" value="">
+	            <input type="hidden" name="steps[${index}].stepNumber" value="${stepIndex}">
+	            <input type="text" name="steps[${index}].content" placeholder="新しい手順を書いてください">
+	            <h3>画像${stepIndex}</h3>
+	            <input type="text" name="steps[${index}].imgPath" placeholder="新しい画像パスを入力してください">
+	        `;
+	        stepContainer.appendChild(stepBlock);
+	        stepIndex++;
+	    };
+	});
 </script>
+
 </html>

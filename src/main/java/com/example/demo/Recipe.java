@@ -52,7 +52,7 @@ public class Recipe {
 		this.comment = comment;
 	}
 	public Img getMainImg() {
-		return mainImg;
+		return this.mainImg;
 	}
 	public void setMainImg(Img mainImg) {
 		this.mainImg = mainImg;

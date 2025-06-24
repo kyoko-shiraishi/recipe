@@ -1,20 +1,21 @@
 package com.example.demo;
 import java.util.List;
 
+
 import java.util.Optional;
 
-import jakarta.transaction.Transactional;
-import jakarta.annotation.PostConstruct;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.bind.annotation.PostMapping;
-
+import org.springframework.web.bind.annotation.PathVariable;
 import com.example.demo.Recipe;
 import com.example.demo.repository.CookingRepository;
 import com.example.demo.Services.RecipeService;
+import com.example.demo.DTO.RecipeRequest;
 
 @Controller
 public class UpdateController {
@@ -25,24 +26,31 @@ public UpdateController(RecipeService recipeService) {
 @RequestMapping("/edit/{id}")
 public ModelAndView edit(ModelAndView mav,@PathVariable Long id) {
 	mav.setViewName("edit");
+	//一意のIDのレシピデータとステップデータをもってくる
 	Optional<Recipe> data = recipeService.findById((long)id);
 	List<Step> steps = recipeService.findByRecipeId(id);
-	mav.addObject("steps",steps);
+	
 	if(data.isPresent()) {
-		mav.addObject("recipe",data.get());	
-		
-	}else if(data.isEmpty()){
+		//Optional<Recipe> 型だから、data.get() で中身を取り出す
+		//まだ「中身があるかどうか分からない箱（Optional）」
+		//get()でその中身を取り出す
+		RecipeRequest dto = recipeService.convertToDto(data.get(), steps);
+		mav.addObject("recipeRequest",dto);
+	}else {
 		mav.addObject("data",null);
 		mav.addObject("message","データが見つかりません");
 	}
-	
 	return mav;
 }
+//RecipeRequest.id,.name,.comment,.MainImg
+//RecipeRequest.steps.stepNumber,.content,.id,.img
 //保存
 @PostMapping("/edit")
-public ModelAndView update(@ModelAttribute Recipe recipe,ModelAndView mav) {
-	recipeService.saveAndFlush(recipe);
-	return new ModelAndView("redirect:/");
+public ModelAndView update(@ModelAttribute RecipeRequest recipeRequest,ModelAndView mav) {
+	recipeService.editFromForm(recipeRequest);
+	ModelAndView res = mav;
+	res = new ModelAndView("redirect:/");
+	return res;
 }
 }
 //IDをそのままレシピページからもらう

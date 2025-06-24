@@ -16,7 +16,7 @@ public class Step {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column
-	private long id;
+	private Long id;
 	@Column 
 	private int step_number;
 	@Column
@@ -30,7 +30,7 @@ public class Step {
 	@JoinColumn(name="img_id",nullable=true)
 		private Img img;
 	
-	public long getId() {
+	public Long getId() {
 		return this.id;
 	}
 	public int getStepNumber() {
@@ -39,7 +39,7 @@ public class Step {
 	public String getContent() {
 		return this.content;
 	}
-	public void setId(long id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 	public void setStepNumber(int step_number) {

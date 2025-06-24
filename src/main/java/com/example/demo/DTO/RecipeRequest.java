@@ -1,14 +1,20 @@
 package com.example.demo.DTO;
 import java.util.List;
+import com.example.demo.Img;
 import java.util.ArrayList;
 //レシピ名・コメント・手順リスト・画像リストなどフォームからの情報を格納するDTOプロパティ
 public class RecipeRequest {
+	private Long id;
 	private String name;
 	private String comment;
 	private List<String> stepDescription= new ArrayList<>();
 	private List<String> stepImg = new ArrayList<>();
+	private List<StepRequest> steps = new ArrayList<>();
 	private String mainImg; //画面のフォームからパス（文字列）をうけとる
 //他のクラスがDTOからDTOプロパティの情報にアクセスできるようにgetter/setterを設定	
+	public Long getId() {
+		return this.id;
+	}
 	public String getName() {
 		return this.name;
 	}
@@ -25,6 +31,12 @@ public class RecipeRequest {
 	public List<String> getStepImg(){
 		return this.stepImg;
 	}
+	public List<StepRequest> getSteps(){
+		return this.steps;
+	}
+	public void setId(Long id) {
+		this.id = id;
+	}
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -39,5 +51,8 @@ public class RecipeRequest {
 	}
 	public void setStepImg(List<String> step_img) {
 		this.stepImg = step_img;
+	}
+	public void setSteps(List<StepRequest> steps) {
+		this.steps = steps;
 	}
 }
