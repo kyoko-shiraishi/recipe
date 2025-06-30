@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>材料マスタ</title>
+</head>
+<body>
+	
+	<h2>材料一覧</h2>
+	<div th:if="${result_message}">
+	  <p th:text="${addedName} + '：' + ${result_message}"></p>
+	</div>
+	<div th:each="mate:${mates}">
+		<p th:text="${mate.name}"></p>
+	</div>
+<h2>材料マスタ編集</h2>
+<form action="/add_mate" method="post" >
+	<input type="text" placeholder="材料名（正規表現）" name="name">
+	<input type="submit">
+</form>
+</body>
+</html>
