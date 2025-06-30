@@ -1,7 +1,9 @@
 package com.example.demo;
 
 import jakarta.persistence.Column; 
-
+import java.util.List;
+import java.util.ArrayList;
+import com.example.demo.*;
 import jakarta.persistence.Entity; 
 import jakarta.persistence.GeneratedValue; 
 import jakarta.persistence.GenerationType; 
@@ -10,6 +12,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.ManyToOne; //追記
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
 
 
 @Entity
@@ -32,6 +36,8 @@ public class Recipe {
 	@JoinColumn(name = "main_img_id")
 	private Img mainImg; //画像に関する情報
 	
+	@OneToMany(mappedBy="recipe",cascade=CascadeType.ALL,orphanRemoval=true)
+	private List<Step> steps = new ArrayList<>();
 	
 	public long getId() {
 		return id;
@@ -57,5 +63,10 @@ public class Recipe {
 	public void setMainImg(Img mainImg) {
 		this.mainImg = mainImg;
 	}
-	
+	public List<Step> getSteps(){
+		return this.steps;
+	}
+	public void setSteps(List<Step> steps) {
+		this.steps=steps;
+	}
 }

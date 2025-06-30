@@ -2,6 +2,7 @@ package com.example.demo;
 import java.util.List;
 
 
+
 import java.util.Optional;
 
 import jakarta.transaction.Transactional;
@@ -14,7 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import com.example.demo.Recipe;
 import com.example.demo.repository.CookingRepository;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.PathVariable;
 import com.example.demo.Services.RecipeService;
 
 @Controller
@@ -24,26 +25,21 @@ public class DeleteController {
 	public DeleteController(RecipeService recipeService) {
 		this.recipeService = recipeService;
 	}
-	
-	//特定のIDのリソースを画面表示
-	@RequestMapping(value="/delete/{id}",method= RequestMethod.GET)
-	public ModelAndView delete(@PathVariable int id,ModelAndView mav) {
-		mav.setViewName("delete");
-		mav.addObject("msg","どのレシピを削除しますか？");
-		Optional<Recipe> data = recipeService.findById((long)id);
-		if(data.isPresent()) {
-			mav.addObject("formModel",data.get());
-		}else if(data.isEmpty()){
-			mav.addObject("formModel",null);
-			mav.addObject("message","データがみつかりません");
-		}
+
+	@GetMapping("/delete/{id}")
+	public ModelAndView toCheck(ModelAndView mav,@PathVariable long id) {
+		mav.setViewName("check");
+		Recipe recipe=recipeService.findById(id).get();
+		String recipe_name = recipe.getName();
+		Long recipe_id = recipe.getId();
+		mav.addObject("msgToCheck",recipe_name);
+		mav.addObject("id",recipe_id);
 		return mav;
 	}
-	
-	@PostMapping("/delete_clicked")
-	
-	public ModelAndView remove(@RequestParam long id,ModelAndView mav) {
+	@PostMapping("/delete/{id}")
+	public ModelAndView remove(@PathVariable long id,ModelAndView mav) {
 		recipeService.deleteById(id);
-		return new ModelAndView("redirect:/");
+		mav = new ModelAndView("redirect:/");
+		return mav;
 	}
 }

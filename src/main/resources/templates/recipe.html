@@ -23,10 +23,21 @@
 		</div>
 	</div>
 	<a th:href="@{/edit/{id}(id=${recipe.id})}"><button>このレシピを編集する</button></a>
+	<a href="#" th:onclick="'return confirmDelete('+${recipe.id}+');'">このレシピを削除する</a>
+	
 </div>
 <div th:if="errorMsg != null">
 	<p th:text="${errorMsg}"></p>
 </div>
 
 </body>
+<script>
+	function confirmDelete(id){
+		if(confirm('本当にこのレシピを消しますか？')){
+			window.location.href="/delete/"+id;
+		}else{
+			return false;
+		}
+	}
+</script>
 </html>

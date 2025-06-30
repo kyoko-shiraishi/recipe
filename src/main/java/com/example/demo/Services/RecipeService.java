@@ -103,14 +103,16 @@ public void createFromForm(RecipeRequest recipe_request) {
 }
 @Transactional
 //データベースから取得した Recipe（レシピ情報）と Step（手順のリスト）を、
-//ーム送信用の RecipeRequest DTO に変換するためのメソッド
+//フォーム送信用の RecipeRequest（DTO） に変換するためのメソッド
+//ネスト構造のDTOであり子DTOにはステップDTOのリストをもつ。
 public RecipeRequest convertToDto(Recipe recipe,List<Step> steps) {
-	RecipeRequest dto = new RecipeRequest();//ここにレシピ名・コメント・手順など、すべての編集対象データを詰め込んでいく
+	RecipeRequest dto = new RecipeRequest();
 	dto.setId(recipe.getId());
 	dto.setName(recipe.getName());
 	dto.setComment(recipe.getComment());
 	dto.setMainImg(recipe.getMainImg()!=null?recipe.getMainImg().getPath():null);
-	//手リストと画像パスリストをそれぞれRecipeRequestに渡す
+	//ユーザーからのステップentityデータをステップDTOのプロパティに詰めなおす
+	//RecipeRequestはstepDTOのリストをStepsプロパティtとしてもつ
 	List<StepRequest> stepDTOs = new ArrayList<>();
 	for(Step step:steps) {
 		StepRequest s = new StepRequest();
@@ -127,6 +129,9 @@ public RecipeRequest convertToDto(Recipe recipe,List<Step> steps) {
 }
 @Transactional
 public void editFromForm(RecipeRequest dto) {
+	//メイン画像更新。パスが提示されるので
+	//Imgテーブルにその画像がなかったら新しくセット
+	//Imgテーブルにその画像があったらリポジトリからメイン画像パス取得
 	String path = dto.getMainImg();
 	Img img;
 	if(img_repository.findByPath(path).isEmpty()) {
@@ -137,30 +142,35 @@ public void editFromForm(RecipeRequest dto) {
 	}else {
 		img = img_repository.findByPath(path).get();
 	}
+	//レシピ本体を更新
+	//DTOから最新状態にするレシピ(ID)をもらう
+	//DTOからの値をname,commentにセット
+	//メイン画像はさっきimgに入れたのでimgをセットし、保存
 	Recipe recipe = repository.findById(dto.getId()).get();
-	
 	recipe.setName(dto.getName());
 	recipe.setComment(dto.getComment());
 	recipe.setMainImg(img);
 	repository.save(recipe);
-	List<StepRequest> steplist =dto.getSteps();
-	//steplistの中にdtoからのステップレコード一覧が入ってる。IDは全図同じ（新）
-	//同じIDの既存のステップ一覧を用意
+	//DTOからステップのリストをもらう
+	//レシピIDはレシピ本体のID
+	//StepリポジトリからそのレシピIDをもつステップたちを集める(そのレシピの既存ステップ)
+	//キー：Stepのid（ユニーク）値：さっき集めたステップたち）の既存ステップマップをつくる
 	Long id =recipe.getId();
 	List<Step> old_steps = step_repository.findByRecipeId(id);
-	//新旧比較していく
-	//旧ステップリストをマップ化
-	
 	Map<Long,Step> oldStepMap = old_steps.stream()
-			.filter(s->s.getId() != null)
 			.collect(Collectors.toMap(Step::getId, s -> s));
-	List<Step> updatedSteps = new ArrayList<>();//DTOに基づいて更新または新規作成されたステップ）
-	
+	List<Step> updatedSteps = new ArrayList<>();
+	List<StepRequest> steplist =dto.getSteps();
+	//DTOからのステップ要素をひとつずつ処理していく
+	//ステップのIDが既に振られており、既存ステップマップにある＝既存ステップなのでマップから取得
+	//既存としてセットされたステップはマップから消しておく
+	//ステップIDが振られていない＝新規追加されたステップ→newしてrecipe_id=今のレシピのIDとする
+	//どちらにせよ、ステップ番号と内容を最新のものにセットしなおす
 	for(StepRequest stepDto:steplist) {
 		Step step;
 		if(stepDto.getId() !=null&&oldStepMap.containsKey(stepDto.getId())) {
 			step = oldStepMap.get(stepDto.getId());
-			oldStepMap.remove(stepDto.getId());//DTOにない + DBにある＝ユーザーが削除したステップ
+			oldStepMap.remove(stepDto.getId());
 		}else {
 			step = new Step();
 			step.setRecipe(recipe);
@@ -169,10 +179,12 @@ public void editFromForm(RecipeRequest dto) {
 		step.setContent(stepDto.getContent());
 		
 		//Img更新
+		//DTOからimg取得
+		//DTOからのimgが空ではなくちゃんと値をもっている&&Imgテーブルにその画像が既存の場合はその値をセット
+		//既存Imgではない場合newして新しくImgに保存
+		//セットした画像をそのステップのimg_idにセット
 		Img setImg;
-		//既存の Step に紐づいた画像があれば取得
 		String stepImgpath = stepDto.getImg();
-		//DTOからのIMG→指定されているやつが既にDB上にあれば再利用、なければnewしてセット→セットしてステップ保存
 		if(stepImgpath != null&&!stepImgpath.isBlank()) {
 		if(img_repository.findByPath(stepImgpath).isPresent()) {
 			 setImg = img_repository.findByPath(stepImgpath).get();		
@@ -181,13 +193,18 @@ public void editFromForm(RecipeRequest dto) {
 			setImg.setPath(stepImgpath);
 			img_repository.save(setImg);
 		}
-		step.setImg(setImg);//Stepに手順画像をセット
+		step.setImg(setImg);
 		
 		}
+		//まだステップは保存されてない！
+		//最新状態のステップリストに処理したステップを追加
 		updatedSteps.add(step);
 		
 	}
-	for(Step toDelete: oldStepMap.values()) {//既存のStep
+	//フォームに含まれていなかった ID の Step だけがoldStepMap に残るようにしてある
+	//残ったステップはユーザーの削除対象ということなのでDBから消しておく
+	//フォームに来てたもの（IDあり or 新規）だけを保存する
+	for(Step toDelete: oldStepMap.values()) {//古いほうののStep
 		step_repository.delete(toDelete);;
 	}
 	for(Step new_step:updatedSteps) {

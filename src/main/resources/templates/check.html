@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>確認画面</title>
+</head>
+<body>
+
+<h2 th:text="${msgToCheck}+'を削除しますか？'"></h2>
+<form th:action="@{/delete/{id}(id=${id})}" method="post">
+	<input type="submit" value="削除">
+</form>
+<a th:href="@{/}">キャンセル</a>
+</body>
+</html>
