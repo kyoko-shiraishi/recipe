@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import jakarta.persistence.Column; 
+
 import java.util.List;
 import java.util.ArrayList;
 import com.example.demo.*;
@@ -21,8 +22,7 @@ import jakarta.persistence.CascadeType;
 public class Recipe {
 	@Id
 	@GeneratedValue(strategy=GenerationType.AUTO)
-	@Column                         //Nullを禁止するバリデーション追記
-	
+	@Column                         
 	private long id;
 	
 	@Column(length=50,nullable=false)

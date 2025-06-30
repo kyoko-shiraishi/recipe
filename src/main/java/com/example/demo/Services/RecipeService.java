@@ -18,11 +18,14 @@ public class RecipeService {
 private final CookingRepository repository;
 private final ImgRepository img_repository;
 private final StepRepository step_repository;
+private final MateRepository mate_repository;
 //コンストラクタインジェクションでサービスクラスからリポジトリ（データベース）を使えるようにする
-public RecipeService(CookingRepository repository,ImgRepository img_repository,StepRepository step_repository) {
+public RecipeService(CookingRepository repository,ImgRepository img_repository,
+		StepRepository step_repository,MateRepository mate_repository) {
 	this.repository = repository;
 	this.img_repository = img_repository;
 	this.step_repository = step_repository;
+	this.mate_repository=mate_repository;
 }
 //コントローラーなどで使いたいメソッドを定義する
 public Optional<Recipe> findById(long id) {
@@ -209,10 +212,25 @@ public void editFromForm(RecipeRequest dto) {
 	}
 	for(Step new_step:updatedSteps) {
 		step_repository.save(new_step);
+		}
 	}
+	public List<Mate> showNames(){
+		List<Mate> data = mate_repository.findAll();
+		return data;
+	}
+	//引数に名前をもらい、mate_repositoryに既存でなければ挿入
+	public String addMate(String name) {
+		Optional<Mate> existing = mate_repository.findByName(name);
+		if(existing.isEmpty()) {
+			Mate new_name = new Mate();
+			new_name.setName(name);
+			mate_repository.save(new_name);
+			return "success";
+		}else {
+			return "already_exists";
 		}
-			
-		}
+	}
+}
 	
 	
 	
