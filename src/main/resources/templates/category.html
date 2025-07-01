@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>カテゴリ編集</title>
+</head>
+<body>
+	<h2>材料カテゴリ一覧</h2>
+		<div th:if="${result_message}">
+		  <p th:text="${addedCate} + '：' + ${result_message}"></p>
+		</div>
+		<div th:each="cate:${cates}">
+			<p th:text="${cate.name}"></p>
+		</div>
+	<h2>材料カテゴリ編集</h2>
+	<form action="/add/category" method="post" >
+		<input type="text" placeholder="カテゴリ名" name="name">
+		<input type="submit">
+	</form>
+	</body>
+</body>
+</html>

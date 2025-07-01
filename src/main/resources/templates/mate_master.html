@@ -14,8 +14,12 @@
 		<p th:text="${mate.name}"></p>
 	</div>
 <h2>材料マスタ編集</h2>
-<form action="/add_mate" method="post" >
-	<input type="text" placeholder="材料名（正規表現）" name="name">
+<form action="/add_mate" method="post" th:object="${mateRequest}">
+	<input type="hidden" th:field="*{id}">
+	<input type="text" placeholder="材料名（正規表現）" th:field="*{name}">
+		<select th:field="*{category}">
+		  <option th:each="i : ${categories}" th:value="${i.id}" th:text="${i.name}"></option>
+		</select>
 	<input type="submit">
 </form>
 </body>

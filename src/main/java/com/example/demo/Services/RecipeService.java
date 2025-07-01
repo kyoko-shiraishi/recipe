@@ -19,13 +19,15 @@ private final CookingRepository repository;
 private final ImgRepository img_repository;
 private final StepRepository step_repository;
 private final MateRepository mate_repository;
+private final CateRepository cate_repository;
 //コンストラクタインジェクションでサービスクラスからリポジトリ（データベース）を使えるようにする
 public RecipeService(CookingRepository repository,ImgRepository img_repository,
-		StepRepository step_repository,MateRepository mate_repository) {
+		StepRepository step_repository,MateRepository mate_repository,CateRepository cate_repository) {
 	this.repository = repository;
 	this.img_repository = img_repository;
 	this.step_repository = step_repository;
 	this.mate_repository=mate_repository;
+	this.cate_repository=cate_repository;
 }
 //コントローラーなどで使いたいメソッドを定義する
 public Optional<Recipe> findById(long id) {
@@ -219,17 +221,35 @@ public void editFromForm(RecipeRequest dto) {
 		return data;
 	}
 	//引数に名前をもらい、mate_repositoryに既存でなければ挿入
-	public String addMate(String name) {
-		Optional<Mate> existing = mate_repository.findByName(name);
+	public String addMate(MateRequest dto) {
+		Optional<Mate> existing = mate_repository.findByName(dto.getName());
 		if(existing.isEmpty()) {
 			Mate new_name = new Mate();
-			new_name.setName(name);
+			new_name.setName(dto.getName());
+			new_name.setCategory(dto.getCategory());
 			mate_repository.save(new_name);
 			return "success";
 		}else {
 			return "already_exists";
 		}
 	}
+	public List<Category> showCateNames(){
+		List<Category> data = cate_repository.findAll();
+		return data;
+	}
+	public String addCate(String name) {
+		String result;
+		Optional<Category> existing = cate_repository.findByname(name);
+		if(existing.isEmpty()) {
+			Category new_category = new Category();
+			new_category.setName(name);
+			cate_repository.save(new_category);
+			return "success";
+		}else {
+			return "already_exists";
+		}
+	}
+	
 }
 	
 	
