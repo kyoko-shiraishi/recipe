@@ -1,8 +1,8 @@
 package com.example.demo.Services;
-import java.util.List;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Optional;
-
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -100,11 +100,16 @@ public void createFromForm(RecipeRequest recipe_request) {
 		    }
 		    step_repository.save(step);
 		    
-		    }
-
-		    
-		
-
+		}
+		//Amountsテーブルにrecipe_requestからの値をセット
+		//Materialの名前をもらう→DB検索→あったらAmount.setMaterial
+		//RecipeのIDをそのままsetRecipeId
+		//amountはそのまま文字列としてもらってsetAmount
+		List<String> materialName = recipe_request.getMaterials();
+		List<String> amounts = recipe_request.getAmounts();
+		List<String> existingMaterials = materialName.stream()
+				.filter(name->mate_repository.findByName(name).isPresent())
+				.collect(Collectors.toList());
 }
 @Transactional
 //データベースから取得した Recipe（レシピ情報）と Step（手順のリスト）を、
