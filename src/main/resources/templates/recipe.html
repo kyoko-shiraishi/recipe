@@ -13,6 +13,11 @@
 	<p th:text="${recipe.mainImg}"></p>
 	<h3>コメント</h3>
 	<p th:text="${recipe.comment}"></p>
+	<h3>材料</h3>
+		<div th:each="amo:${amos}">
+			<p th:text="${amo.mate.name}"></p>
+			<p th:text="${amo.amount}"></p>
+		</div>
 	<h3>作り方</h3>
 	<div th:each="step:${steps}">
 		<h3 th:text="${'手順'+step.stepNumber}"></h3>

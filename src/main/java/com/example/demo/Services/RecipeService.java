@@ -20,14 +20,17 @@ private final ImgRepository img_repository;
 private final StepRepository step_repository;
 private final MateRepository mate_repository;
 private final CateRepository cate_repository;
+private final AmountRepository amo_repository;
 //コンストラクタインジェクションでサービスクラスからリポジトリ（データベース）を使えるようにする
 public RecipeService(CookingRepository repository,ImgRepository img_repository,
-		StepRepository step_repository,MateRepository mate_repository,CateRepository cate_repository) {
+		StepRepository step_repository,MateRepository mate_repository,CateRepository cate_repository,
+		AmountRepository amo_repository) {
 	this.repository = repository;
 	this.img_repository = img_repository;
 	this.step_repository = step_repository;
 	this.mate_repository=mate_repository;
 	this.cate_repository=cate_repository;
+	this.amo_repository = amo_repository;
 }
 //コントローラーなどで使いたいメソッドを定義する
 public Optional<Recipe> findById(long id) {
@@ -105,11 +108,45 @@ public void createFromForm(RecipeRequest recipe_request) {
 		//Materialの名前をもらう→DB検索→あったらAmount.setMaterial
 		//RecipeのIDをそのままsetRecipeId
 		//amountはそのまま文字列としてもらってsetAmount
-		List<String> materialName = recipe_request.getMaterials();
+		List<String> materialNames = recipe_request.getMaterials();
 		List<String> amounts = recipe_request.getAmounts();
-		List<String> existingMaterials = materialName.stream()
-				.filter(name->mate_repository.findByName(name).isPresent())
-				.collect(Collectors.toList());
+		List<Amount> amountList = new ArrayList<>();
+		List<String> tempList = new ArrayList<>();
+		
+		//Mateオブジェクト（レコード）の取り出し
+		for(int i=0;i<materialNames.size();i++) {
+			Amount new_amount = new Amount();
+			String material_name = materialNames.get(i);
+			String amo = amounts.get(i);
+			Optional<Mate> OptionalMate = mate_repository.findByName(material_name);
+			if(OptionalMate.isPresent()) {
+				Mate existMate = OptionalMate.get();
+				new_amount.setMate(existMate);
+			}else {
+				//材料マスタにDTOから送られてきた材料がなかったとき
+				//仮登録として材料名をMateクラスに登録して管理者に通知
+				Mate tempMate = new Mate();
+				tempMate.setTempMate(true);
+				tempMate.setName(material_name);
+				Mate savedTempMate=mate_repository.save(tempMate);
+				new_amount.setMate(savedTempMate);
+				tempList.add(savedTempMate.getName());
+			}
+			
+			new_amount.setRecipe(recipe);
+			new_amount.setAmount(amo);
+			amountList.add(new_amount);	
+			
+		}
+		amo_repository.saveAll(amountList);
+		//管理者に通知
+		 for(String i:tempList) {
+			 System.out.println(i);
+		 }
+}
+public List<Amount> findByRecipe(Long id) {
+	List<Amount> recipe_mate_amos = amo_repository.findByRecipeId(id);
+	return recipe_mate_amos;
 }
 @Transactional
 //データベースから取得した Recipe（レシピ情報）と Step（手順のリスト）を、

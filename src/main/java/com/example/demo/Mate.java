@@ -30,6 +30,8 @@ public class Mate {
 	@JoinColumn(name="category_id")
 	private Category category;
 	
+	@Column(name="is_temporary")
+	private Boolean tempMate = false;
 	
 	public Long getId() {
 		return this.id;
@@ -48,5 +50,11 @@ public class Mate {
 	}
 	public void setCategory(Category cate) {
 		this.category = cate;
+	}
+	public boolean isTempMate() {
+		return this.tempMate;
+	}
+	public void setTempMate(boolean tempMate) {
+		this.tempMate = tempMate;
 	}
 }
