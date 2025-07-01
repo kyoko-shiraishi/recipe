@@ -11,6 +11,8 @@ public class RecipeRequest {
 	private List<String> stepImg = new ArrayList<>();
 	private List<StepRequest> steps = new ArrayList<>();
 	private String mainImg; //画面のフォームからパス（文字列）をうけとる
+	private List<String> materials= new ArrayList<>();
+	private List<String> amounts = new ArrayList<>();;
 //他のクラスがDTOからDTOプロパティの情報にアクセスできるようにgetter/setterを設定	
 	public Long getId() {
 		return this.id;
@@ -54,5 +56,17 @@ public class RecipeRequest {
 	}
 	public void setSteps(List<StepRequest> steps) {
 		this.steps = steps;
+	}
+	public List<String> getMaterials() {
+		return this.materials;
+	}
+	public void setMaterials(List<String> materials) {
+		this.materials=materials;
+	}
+	public List<String> getAmounts() {
+		return this.amounts;
+	}
+	public void setAmounts(List<String> amount) {
+		this.amounts=amount;
 	}
 }
