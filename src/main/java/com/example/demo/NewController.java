@@ -20,14 +20,9 @@ public class NewController {
 	@RequestMapping(value="/create")
 	public ModelAndView create(ModelAndView mav) {
 		RecipeRequest recipeRequest = new RecipeRequest();
-		// step_imgに空文字列をいくつか用意しておく
-	    recipeRequest.getStepImg().add(""); // step_img[0]
-	    recipeRequest.getStepDescription().add("");
-	    recipeRequest.getMaterials().add("");
-	    recipeRequest.getAmounts().add("");
+		
 		mav.setViewName("create");
 		mav.addObject("title","新しいレシピを作ってください！");
-		
 		mav.addObject("recipe_request", recipeRequest); 
 		return mav;
 	}

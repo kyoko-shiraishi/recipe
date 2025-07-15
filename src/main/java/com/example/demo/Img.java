@@ -14,7 +14,7 @@ public class Img {
 	@GeneratedValue(strategy=GenerationType.AUTO)
 	@Column                         
 	private long id;
-	@Column
+	@Column(unique=true)
 	private String path;
 	public long getId() {
 		return id;

@@ -13,8 +13,7 @@
 		
 		<label for="dish-name">料理名</label>
 			<input type="text" name="name" id="dish-name" th:field="*{name}" >
-		<div th:if="${#fields.hasErrors('name')}" >	
-		</div>
+		
 		
 		<label for="main_img" >メイン画像(path)</label>
 			<input type="text"  th:field="*{mainImg}"><!--nullはダメ-->
@@ -26,8 +25,8 @@
 			<label for="materials">材料</label>
 			<label for="amounts">数量</label>	
 			<p></p>
-			<input type="text" th:field="*{materials[0]}">
-			<input type="text" th:field="*{amounts[0]}"> 
+			<input type="text" th:field="*{amos[0].mateName}">
+			<input type="text" th:field="*{amos[0].amount}"> 
 			</div>
 		</div>
 			<button type="button" onclick="addMates()">+材料追加</button>
@@ -37,12 +36,15 @@
 		<div id="step_container">
 		    <div class="step_block">
 		      <label>手順1</label>
-		      <input type="text"  th:field="*{stepDescription[0]}"/>
+		      <input type="text"  th:field="*{steps[0].content}" class="deletable_input"/>
 		      <label>画像</label>
-		      <input type="text" th:field="*{stepImg[0]}"/>
+		      <input type="text" th:field="*{steps[0].img}"/>
+			  
+			  <button type="button" class="stepBtn">＋</button>
+			  <button type="button" class="deleteBtn">×</button>
 		    </div>
 		  </div>
-		 <button type="button" onclick="addStep()">＋手順追加</button>
+		 
 		<input type="submit" value="作成" id="submit-button">
 	</form>
 	
@@ -50,32 +52,58 @@
 
 </body>
 <script>
-	let stepIndex = 1;
-	let mateIndex=1;
-	function addStep(){
+	document.addEventListener('DOMContentLoaded',()=>{
 		const stepContainer = document.querySelector('#step_container');
-		const stepBlock = document.createElement("div");
-		stepBlock.className = 'step_block';
-		stepBlock.innerHTML=`
-		<label>手順${stepIndex+1}</label>
-		<input type="text" name="stepDescription[${stepIndex}]"/>
-		<label>画像${stepIndex+1}</label>
-		<input type="text" name="stepImg[${stepIndex}]"/>
-		`;
-		stepContainer.appendChild(stepBlock);
-		stepIndex++;
-	}
-	function addMates(){
-		const mateContainer = document.querySelector('#mate_container');
-		const mateBlock = document.createElement("div");
-		mateBlock.className='mate_block';
-		mateBlock.innerHTML=`
+		stepContainer.addEventListener('click',(event)=>{
+			const target = event.target;
+			if(target.classList.contains('stepBtn')){
+				//クリックされた追加ボタンを引数に渡してaddStepAter呼び出し
+				const currentBlock = target.closest('.step_block');
+				addStepAfter(currentBlock);
+			}
+			if(target.classList.contains('deleteBtn')){
+				//削除要素をremove()してrenumber()呼び出し
+				const block = target.closest('.step_block');
+				block.remove();
+				renumber();
+			}
+		});
+		function addStepAfter(afterElement){
+				let stepIndex = document.querySelectorAll('.step_block').length;
+				const newElement = document.createElement("div");
+				newElement.className = 'step_block';
+				newElement.innerHTML=`
+				<label>手順${stepIndex+1}</label>
+				<input type="text" name="steps[${stepIndex}].content" class="deletable_input"/>
+				<label>画像${stepIndex+1}</label>
+				<input type="text" name="steps[${stepIndex}].img"/>
+				<button type="button" class="stepBtn">＋</button>
+				<button type="button" class="deleteBtn">×</button>
+				`;
+				//作ったブロックを今のブロック(afterElement)の直後に挿入
+				afterElement.insertAdjacentElement('afterend',newElement);
+				renumber();
+			}
+		function renumber(){
+			const blocks = document.querySelectorAll('.step_block');
+			blocks.forEach((block,index)=>{
+				if(index==0)return;//1個目はタイムリーフで生成されているから番号振り直し対象から除外
+				//手順番号のラベル、テキスト欄を取得
+				const label = block.querySelector('label');
+				const contentInput = block.querySelector('input[name$=".content"]');
+				const imgInput = block.querySelector('input[name$=".img"]');
+				//正しい番号の振り直し
+				if(label){
+					label.textContent = `手順${index+1}`;
+				}
+				if(contentInput)contentInput.name=`steps[${index}].content`;
+				if(imgInput)imgInput.name=`steps[${index}].img`;
+			});
+		}
 		
-		<input type="text" name="materials[${mateIndex}]"/>	
-		<input type="text" name="amounts[${mateIndex}]"/> 
-		`;
-		mateContainer.appendChild(mateBlock);
-		mateIndex++;
-	}
+		
+	});
+	
+	
 </script>
 </html>

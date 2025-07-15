@@ -31,9 +31,7 @@
 	<a href="#" th:onclick="'return confirmDelete('+${recipe.id}+');'">このレシピを削除する</a>
 	
 </div>
-<div th:if="errorMsg != null">
-	<p th:text="${errorMsg}"></p>
-</div>
+
 
 </body>
 <script>

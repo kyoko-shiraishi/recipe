@@ -29,12 +29,9 @@ public ModelAndView edit(ModelAndView mav,@PathVariable Long id) {
 	//一意のIDのレシピデータとステップデータをもってくる
 	Optional<Recipe> data = recipeService.findById((long)id);
 	List<Step> steps = recipeService.findByRecipeId(id);
-	
+	List<Amount> amounts = recipeService.findByRecipe(id);
 	if(data.isPresent()) {
-		//Optional<Recipe> 型だから、data.get() で中身を取り出す
-		//まだ「中身があるかどうか分からない箱（Optional）」
-		//get()でその中身を取り出す
-		RecipeRequest dto = recipeService.convertToDto(data.get(), steps);
+		RecipeRequest dto = recipeService.convertToDto(data.get(), steps,amounts);
 		mav.addObject("recipeRequest",dto);
 	}else {
 		mav.addObject("data",null);

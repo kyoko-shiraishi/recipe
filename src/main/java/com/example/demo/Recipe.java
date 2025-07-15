@@ -32,12 +32,18 @@ public class Recipe {
 	@Column
 	private String comment; //レシピとコメントの記述は一対多なのでdescriptionsテーブルにrecipe_id
 	
-	@OneToOne
+	@OneToOne(cascade=CascadeType.ALL,orphanRemoval=true)
 	@JoinColumn(name = "main_img_id")
 	private Img mainImg; //画像に関する情報
 	
+	//「このエンティティ（Recipe）には複数のStepやAmountが関連している」ことを表すプロパティであって、
+	//データベースの1つのカラムではない
+	//mappedBy=子の側に recipe というフィールドがあってそこに外部キーがある
 	@OneToMany(mappedBy="recipe",cascade=CascadeType.ALL,orphanRemoval=true)
 	private List<Step> steps = new ArrayList<>();
+	
+	@OneToMany(mappedBy="recipe",cascade=CascadeType.ALL,orphanRemoval=true)
+	private List<Amount> amos = new ArrayList<>();
 	
 	public long getId() {
 		return id;
@@ -69,4 +75,10 @@ public class Recipe {
 	public void setSteps(List<Step> steps) {
 		this.steps=steps;
 	}
+	public List<Amount> getAmos() {
+		return amos; 
+	}
+    public void setAmos(List<Amount> amounts) { 
+    	this.amos = amounts;
+    }
 }
