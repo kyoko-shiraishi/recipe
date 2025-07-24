@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>材料マスタ</title>
+
 </head>
 <body>
 	
@@ -11,7 +12,9 @@
 	  <p th:text="${addedName} + '：' + ${result_message}"></p>
 	</div>
 	<div th:each="mate:${mates}">
-		<p th:text="${mate.name}"></p>
+		
+			<p th:text="${mate.name}+':'+${mate.category}"></p>
+
 	</div>
 <h2>材料マスタ編集</h2>
 <form action="/add_mate" method="post" th:object="${mateRequest}">
@@ -22,5 +25,9 @@
 		</select>
 	<input type="submit">
 </form>
+<h2>仮登録材料一覧</h2>	
+	<div th:each="temp:${tempDates}">
+		<p th:text="${temp.name}"></p>
+	</div>
 </body>
 </html>

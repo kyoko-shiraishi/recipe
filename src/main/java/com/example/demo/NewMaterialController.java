@@ -25,8 +25,11 @@ public class NewMaterialController {
 	public ModelAndView showMateMaster(ModelAndView mav) {
 		mav.setViewName("mate_master");
 		List<Mate> data = recipeService.showNames();
+		List<Mate> tempDate = recipeService.showTempMates();
 		List<Category> categoeies = recipeService.showCateNames();
+		
 		mav.addObject("mates", data);
+		mav.addObject("tempDates",tempDate);
 		mav.addObject("mateRequest", new MateRequest());
 		mav.addObject("categories", categoeies);
 		return mav;

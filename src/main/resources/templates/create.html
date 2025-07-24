@@ -21,15 +21,17 @@
 			<input type="text" name="comment" id="dish-comment" th:field="*{comment}">
 		<h2>材料</h2>
 		<div id="mate_container">
-			<div mate_block>
+			<div class="mate_block">
 			<label for="materials">材料</label>
 			<label for="amounts">数量</label>	
 			<p></p>
 			<input type="text" th:field="*{amos[0].mateName}">
 			<input type="text" th:field="*{amos[0].amount}"> 
+			<button type="button" class="addMate">+</button>
+			<button type="button" class="deleteMate">×</button>
 			</div>
 		</div>
-			<button type="button" onclick="addMates()">+材料追加</button>
+			
 			<p></p>   
 
 		<h2>作り方</h2>	
@@ -53,6 +55,7 @@
 </body>
 <script>
 	document.addEventListener('DOMContentLoaded',()=>{
+		const mateContainer = document.querySelector('#mate_container');
 		const stepContainer = document.querySelector('#step_container');
 		stepContainer.addEventListener('click',(event)=>{
 			const target = event.target;
@@ -66,6 +69,22 @@
 				const block = target.closest('.step_block');
 				block.remove();
 				renumber();
+			}
+		});
+		mateContainer.addEventListener('click',(event)=>{
+			const target = event.target;
+			if(target.classList.contains('addMate')){
+				//材料追加ボタンがおされたら
+				//新しくファーム生成
+				const currentBlock = target.closest('.mate_block');
+				addMate(currentBlock);
+			}
+			if(target.classList.contains('deleteMate')){
+				//材料削除ボタンがおされたら
+				//ブロックremove()して採番
+				const block = target.closest('.mate_block');
+				block.remove();
+				mateRenumber();
 			}
 		});
 		function addStepAfter(afterElement){
@@ -99,6 +118,31 @@
 				if(contentInput)contentInput.name=`steps[${index}].content`;
 				if(imgInput)imgInput.name=`steps[${index}].img`;
 			});
+		}
+		function mateRenumber(){
+			const blocks = document.querySelectorAll('.mate_block');
+			blocks.forEach((block,index)=>{
+				if(index==0)return;
+				const mateName = block.querySelector('input[name$=".mateName"]');
+				const mateNumber = block.querySelector('input[name$=".amount"]');
+				if(mateName)mateName.name=`amos[${index}].mateName`;
+				if(mateNumber)mateNumber.name=`amos[${index}].amount`;
+			});
+		}
+		//材料なのでラベルの採番なし
+		function addMate(afterElement){
+			let arrIndex = document.querySelectorAll('.mate_block').length;
+			const newMaterial = document.createElement('div');
+			newMaterial.className = 'mate_block';
+			newMaterial.innerHTML=`
+			<input type="text" name="amos[${arrIndex}].mateName">
+			<input type="text" name="amos[${arrIndex}].amount"> 
+			
+			<button type="button" class="addMate">+</button>
+			<button type="button" class="deleteMate">×</button>
+			`;
+			afterElement.insertAdjacentElement('afterend',newMaterial);
+			mateRenumber();
 		}
 		
 		

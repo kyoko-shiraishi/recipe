@@ -299,8 +299,16 @@ public void editFromForm(RecipeRequest dto) {
 	}
 	
 	public List<Mate> showNames(){
-		List<Mate> data = mate_repository.findAll();
+		List<Mate> data = mate_repository.findAll().stream()
+				.filter(mate->mate.isTempMate()==false)
+				.collect(Collectors.toList());
 		return data;
+	}
+	public List<Mate> showTempMates(){
+		List<Mate> tempDate = mate_repository.findAll().stream()
+				.filter(mate->mate.isTempMate()==true)
+				.collect(Collectors.toList());
+		return tempDate;
 	}
 	//引数に名前をもらい、mate_repositoryに既存でなければ挿入
 	public String addMate(MateRequest dto) {
@@ -309,11 +317,21 @@ public void editFromForm(RecipeRequest dto) {
 			Mate new_name = new Mate();
 			new_name.setName(dto.getName());
 			new_name.setCategory(dto.getCategory());
+			new_name.setTempMate(false);
 			mate_repository.save(new_name);
 			return "success";
-		}else {
-			return "already_exists";
 		}
+		Mate existingMate = existing.get();
+		if(existingMate.isTempMate()) {
+			existingMate.setName(dto.getName());
+			existingMate.setCategory(dto.getCategory());
+			existingMate.setTempMate(false);
+			mate_repository.save(existingMate);
+			return "success";
+		}else {
+			return "already_exist";
+		}
+		
 	}
 	public List<Category> showCateNames(){
 		List<Category> data = cate_repository.findAll();
