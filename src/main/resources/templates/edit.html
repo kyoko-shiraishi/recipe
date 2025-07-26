@@ -30,82 +30,139 @@
 									<p></p>
 							<div th:each = "amo,iterStat : *{amos}" class="mate_block">		
 									<input type="text" th:field="*{amos[__${iterStat.index}__].mateName}">
-									<input type="text" th:field="*{amos[__${iterStat.index}__].amount}"> 
+									<input type="text" th:field="*{amos[__${iterStat.index}__].amount}">
+								<div th:if="${iterStat.index>0}">
+									<button type="button" class="addMate">+</button>
+									<button type="button" class="deleteMate">×</button> 
+								</div>
 							</div>
 						</div>
 						
-									<button type="button" onclick="addMates()">+材料追加</button>
-									<p></p>   
+									
+						<p></p>   
 						<h3>作り方</h3>
-						<div class="step_container">
+						<div id="step_container">
 							<!--iterStat.index で 0 からのインデックス番号-->
 							<div th:each="step,iterStat : *{steps}" class="step_block">
-									<h3 th:text="${'手順'+step.stepNumber}"></h3>
+									<h3 th:text="'手順'+${iterStat.index + 1}"></h3>
 									<!--steps[0].id, steps[1].id のように番号付きで送信される-->
 									<input type="hidden" th:field="*{steps[__${iterStat.index}__].id}" />
 									<input type="text" th:field="*{steps[__${iterStat.index}__].content}" />
-									<input type="hidden" th:field="*{steps[__${iterStat.index}__].stepNumber}" />
 									
 									
-									<h3 th:text="${'画像'+step.stepNumber}"></h3>
+									
+									<h3 th:text="'画像'+${iterStat.index + 1}"></h3>
 									<input type="text" th:field="*{steps[__${iterStat.index}__].img}" />
-								
-								
+								<div th:if="${iterStat.index>0}">
+									<button type="button" class="stepBtn">+</button>
+									<button type="button" class="deleteBtn">×</button>
+								</div>
 							</div>
 						</div>
 						<p></p>
 						
 						<p></p>
 						<input type="submit"  value="更新"/>
-						<input type="hidden" id="lastNumber" 
-						th:value="${recipeRequest.steps[recipeRequest.steps.size()-1].stepNumber}" />
+						
 				</form>
-				<button onclick="addStep()">+手順追加</button>
+				
 			</div>
 	
 </body>
 <script>
-	
-	//ページの HTML がすべて読み込まれたときに処理を始めるイベント
-	window.addEventListener('DOMContentLoaded', () => {
-		let stepIndex = 1; // デフォルト値
-	    const lastNumberInput = document.getElementById('lastNumber');
-		
-	    if (lastNumberInput && lastNumberInput.value) {//lastNumberInput が存在し、かつ value が空でない場合
-	        stepIndex = parseInt(lastNumberInput.value) + 1;//value を数値に変換（parseInt）し、+1 して次に追加する手順の番号を設定
-	    }
-		 window.addStep = function () {
-			        const stepContainer = document.querySelector('.step_container');
-			        const index = document.querySelectorAll('.step_block').length;
-		//div 要素を作成して、それにクラス step_block を付ける。これが1つの手順欄の枠になる
-			        const stepBlock = document.createElement('div');
-			        stepBlock.className = 'step_block';
-			        stepBlock.innerHTML = `
-			            <h3>手順${stepIndex}</h3>
-			            <input type="hidden" name="steps[${index}].id" value="">
-			            <input type="hidden" name="steps[${index}].stepNumber" value="${stepIndex}">
-			            <input type="text" name="steps[${index}].content" placeholder="新しい手順を書いてください">
-			            <h3>画像${stepIndex}</h3>
-			            <input type="text" name="steps[${index}].img" placeholder="新しい画像パスを入力してください">
-			        `;
-			        stepContainer.appendChild(stepBlock);
-			        stepIndex++;
-			    };
-				window.addMates = function () {
-						let mateIndex = document.querySelectorAll('.mate_block').length;
-						const mateContainer = document.querySelector('#mate_container');
-						const mateBlock = document.createElement("div");
-						mateBlock.className='mate_block';
-						mateBlock.innerHTML=`
-						
-						<input type="text" name="amos[${mateIndex}].mateName"/>	
-						<input type="text" name="amos[${mateIndex}].amount"/> 
-						`;
-						mateContainer.appendChild(mateBlock);
-						
-					}
+	document.addEventListener('DOMContentLoaded',()=>{
+		const mateContainer = document.querySelector('#mate_container');
+		const stepContainer = document.querySelector('#step_container');
+		stepContainer.addEventListener('click',(event)=>{
+			const target = event.target;
+			if(target.classList.contains('stepBtn')){
+				//クリックされた追加ボタンを引数に渡してaddStepAter呼び出し
+				const currentBlock = target.closest('.step_block');
+				addStepAfter(currentBlock);
+			}
+			if(target.classList.contains('deleteBtn')){
+				//削除要素をremove()してrenumber()呼び出し
+				const block = target.closest('.step_block');
+				block.remove();
+				renumber();
+			}
 		});
-	   
+		mateContainer.addEventListener('click',(event)=>{
+			const target = event.target;
+			if(target.classList.contains('addMate')){
+				//材料追加ボタンがおされたら
+				//新しくファーム生成
+				const currentBlock = target.closest('.mate_block');
+				addMate(currentBlock);
+			}
+			if(target.classList.contains('deleteMate')){
+				//材料削除ボタンがおされたら
+				//ブロックremove()して採番
+				const block = target.closest('.mate_block');
+				block.remove();
+				mateRenumber();
+			}
+		});
+		function addStepAfter(afterElement){
+				let stepIndex = document.querySelectorAll('.step_block').length;
+				const newElement = document.createElement("div");
+				newElement.className = 'step_block';
+				newElement.innerHTML=`
+				<label>手順${stepIndex+1}</label>
+				<input type="text" name="steps[${stepIndex}].content" class="deletable_input"/>
+				<label>画像${stepIndex+1}</label>
+				<input type="text" name="steps[${stepIndex}].img"/>
+				<button type="button" class="stepBtn">＋</button>
+				<button type="button" class="deleteBtn">×</button>
+				`;
+				//作ったブロックを今のブロック(afterElement)の直後に挿入
+				afterElement.insertAdjacentElement('afterend',newElement);
+				renumber();
+			}
+		function renumber(){
+			const blocks = document.querySelectorAll('.step_block');
+			blocks.forEach((block,index)=>{
+				if(index==0)return;//1個目はタイムリーフで生成されているから番号振り直し対象から除外
+				//手順番号のラベル、テキスト欄を取得
+				const label = block.querySelector('label');
+				const contentInput = block.querySelector('input[name$=".content"]');
+				const imgInput = block.querySelector('input[name$=".img"]');
+				//正しい番号の振り直し
+				if(label){
+					label.textContent = `手順${index+1}`;
+				}
+				if(contentInput)contentInput.name=`steps[${index}].content`;
+				if(imgInput)imgInput.name=`steps[${index}].img`;
+			});
+		}
+		function mateRenumber(){
+			const blocks = document.querySelectorAll('.mate_block');
+			blocks.forEach((block,index)=>{
+				if(index==0)return;
+				const mateName = block.querySelector('input[name$=".mateName"]');
+				const mateNumber = block.querySelector('input[name$=".amount"]');
+				if(mateName)mateName.name=`amos[${index}].mateName`;
+				if(mateNumber)mateNumber.name=`amos[${index}].amount`;
+			});
+		}
+		//材料なのでラベルの採番なし
+		function addMate(afterElement){
+			let arrIndex = document.querySelectorAll('.mate_block').length;
+			const newMaterial = document.createElement('div');
+			newMaterial.className = 'mate_block';
+			newMaterial.innerHTML=`
+			<input type="text" name="amos[${arrIndex}].mateName">
+			<input type="text" name="amos[${arrIndex}].amount"> 
+			
+			<button type="button" class="addMate">+</button>
+			<button type="button" class="deleteMate">×</button>
+			`;
+			afterElement.insertAdjacentElement('afterend',newMaterial);
+			mateRenumber();
+		}
+		
+		
+	});
 	
 	
 </script>

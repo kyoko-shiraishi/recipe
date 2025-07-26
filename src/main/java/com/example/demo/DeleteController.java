@@ -26,16 +26,7 @@ public class DeleteController {
 		this.recipeService = recipeService;
 	}
 
-	@GetMapping("/delete/{id}")
-	public ModelAndView toCheck(ModelAndView mav,@PathVariable long id) {
-		mav.setViewName("check");
-		Recipe recipe=recipeService.findById(id).get();
-		String recipe_name = recipe.getName();
-		Long recipe_id = recipe.getId();
-		mav.addObject("msgToCheck",recipe_name);
-		mav.addObject("id",recipe_id);
-		return mav;
-	}
+
 	@PostMapping("/delete/{id}")
 	public ModelAndView remove(@PathVariable long id,ModelAndView mav) {
 		recipeService.deleteById(id);
