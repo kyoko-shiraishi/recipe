@@ -3,31 +3,99 @@
 <head>
 <meta charset="UTF-8">
 <title>材料マスタ</title>
+<style>
+	.modal{
+		display:none;
+		position:fixed;
+		top:0;
+		left: 0;
+		width:100%;
+		height:100%;
+		background-color: rgba(0,0,0,0.5);
+		justify-content: center;
+		align-items: center;
+	}
+	.modal-content{
+		background-color: white;
+		    padding: 20px;
+		    border-radius: 10px;
+		    width: 400px;
+		    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+	}
+	.close-btn {
+	    float: right;
+	    cursor: pointer;
+	    color: gray;
+	  }
+	#ing_info_items{
+		display: flex;
+	}
+	#ing_info_items div{
+		padding-top: 40px;
+		padding-right: 30px;
+	}
+</style>
 
 </head>
 <body>
-	
-	<h2>材料一覧</h2>
-	<div th:if="${result_message}">
-	  <p th:text="${addedName} + '：' + ${result_message}"></p>
-	</div>
-	<div th:each="mate:${mates}">
+	<!--メインコンテンツ。カテゴリ、材料名、シノニムの一覧表示-->
+	<div id="header">
 		
-			<p th:text="${mate.name}+':'+${mate.category}"></p>
+		<button id="openModalBtn">シノニム辞書を開く</button><!--ボタン1個しかない から、ピンポイントで取れるように id-->
+		<!--モーダル本体-->
+		<div id="myModal" class="modal">
+			<div class="modal-content">
+				<span id="closeModalBtn" class="close-btn">×</span>
+				<h2>シノニム辞書</h2>
+				<input type="text" id="searchInput">
+				<p>シノニム一覧</p>
+			</div>
+			
+		</div>
+	</div>
+	<div id="main_contents">
+	    <h2>材料一覧</h2>
+	    <ul>
+	        <li th:each="ing : ${IngInfo}" id="ing_info_items">
+	            <div>カテゴリ: <span th:text="${ing.category}"></span></div>
+	            <div>材料名: <span th:text="${ing.name}"></span></div>
+	            <div th:if="${ing.synonyms != null and !ing.synonyms.isEmpty()}">
+	                シノニム:
+	                <span th:each="syn, stat : ${ing.synonyms}" 
+	                      th:text="${syn} + ${stat.last ? '' : ', '}"></span>
+	            </div>
+	        </li>
+	    </ul>
+	</div>
 
-	</div>
-<h2>材料マスタ編集</h2>
-<form action="/add_mate" method="post" th:object="${mateRequest}">
-	<input type="hidden" th:field="*{id}">
-	<input type="text" placeholder="材料名（正規表現）" th:field="*{name}">
-		<select th:field="*{category}">
-		  <option th:each="i : ${categories}" th:value="${i.id}" th:text="${i.name}"></option>
-		</select>
-	<input type="submit">
-</form>
-<h2>仮登録材料一覧</h2>	
-	<div th:each="temp:${tempDates}">
-		<p th:text="${temp.name}"></p>
-	</div>
+	<!--
+<div id="tempo_footer">
+	<h2>仮登録材料一覧</h2>	
+		<div th:each="temp:${tempDatas}">o
+			<p th:text="${temp.name}"></p>
+	</div>	
+</div>
+<-->
 </body>
+<!--<script>
+	document.addEventListener("DOMContentLoaded",()=>{
+		const openModal = document.querySelector('#openModalBtn');
+		const modal = document.querySelector('.modal');
+		const closeBtn = document.querySelector('#closeModalBtn');
+		
+		openModal.addEventListener('click',()=>{
+			modal.style.display="flex";
+		});
+		closeBtn.addEventListener("click", () => {
+		    modal.style.display = "none";
+		  });
+		modal.addEventListener('click',(e)=>{
+			if(e.target==modal){
+				modal.style.display = "none";
+			}
+			
+		});
+	});
+</script>
+<-->
 </html>

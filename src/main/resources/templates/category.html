@@ -13,7 +13,7 @@
 			<p th:text="${cate.name}"></p>
 		</div>
 	<h2>材料カテゴリ編集</h2>
-	<form action="/add/category" method="post" >
+	<form th:action="@{/add/category}" method="post" >
 		<input type="text" placeholder="カテゴリ名" name="name">
 		<input type="submit">
 	</form>

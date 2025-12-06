@@ -1,153 +1,194 @@
 <!DOCTYPE html>
- 
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_parameter_name" th:content="${_csrf.parameterName}">
 <title th:text="${title}"></title>
+<style>
+  img { max-width: 200px; display: none; }
+</style>
 </head>
 <body>
-	<!--recipe_requestはDTO のインスタンス（from NewController）-->
-	<form name="new" action="/create" method="post" th:object="${recipe_request}">
-		
-		
-		
-		<label for="dish-name">料理名</label>
-			<input type="text" name="name" id="dish-name" th:field="*{name}" >
-		
-		
-		<label for="main_img" >メイン画像(path)</label>
-			<input type="text"  th:field="*{mainImg}"><!--nullはダメ-->
-		<label for="dish-comment">コメント</label>
-			<input type="text" name="comment" id="dish-comment" th:field="*{comment}">
-		<h2>材料</h2>
-		<div id="mate_container">
-			<div class="mate_block">
-			<label for="materials">材料</label>
-			<label for="amounts">数量</label>	
-			<p></p>
-			<input type="text" th:field="*{amos[0].mateName}">
-			<input type="text" th:field="*{amos[0].amount}"> 
-			<button type="button" class="addMate">+</button>
-			<button type="button" class="deleteMate">×</button>
-			</div>
-		</div>
-			
-			<p></p>   
 
-		<h2>作り方</h2>	
-		<div id="step_container">
-		    <div class="step_block">
-		      <label>手順1</label>
-		      <input type="text"  th:field="*{steps[0].content}" class="deletable_input"/>
-		      <label>画像</label>
-		      <input type="text" th:field="*{steps[0].img}"/>
-			  
-			  <button type="button" class="stepBtn">＋</button>
-			  <button type="button" class="deleteBtn">×</button>
-		    </div>
-		  </div>
-		 
-		<input type="submit" value="作成" id="submit-button">
-	</form>
-	
-	
+<form name="new" action="/create" method="post" enctype="multipart/form-data" th:object="${recipeDTO}">
+    <!-- CSRF hidden -->
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+    <!-- 料理名 -->
+    <label for="name">料理名</label>
+    <input type="text"  th:field="*{name}" />
+
+    <!-- メイン画像 -->
+    <label for="main_img">メイン画像(path)</label>
+    <input type="file" id="main_img" th:field="*{mainImg}" required accept="image/*">
+    <div id="previewArea">
+        <img id="previewImg" src="" alt="プレビュー">
+    </div>
+
+    <!-- コメント -->
+    <label for="dish-comment">コメント</label>
+    <input type="text"  id="dish-comment" th:field="*{comment}">
+
+    <!-- 材料 -->
+    <h2>材料</h2>
+    <div id="mate_container">
+        <div class="block">
+            <label>材料</label>
+            <label>数量</label>
+            <input type="text" th:field="*{ingredients[0].name}">
+            <input type="text" th:field="*{ingredients[0].quantity}">
+            <button type="button" class="add">+</button>
+            <button type="button" class="delete">×</button>
+        </div>
+    </div>
+
+    <!-- 作り方 -->
+    <h2>作り方</h2>
+    <div id="step_container">
+        <div class="block">
+            <label>手順1</label>
+            <input type="text" th:field="*{steps[0].content}" />
+            <label>画像/動画</label>
+            <input type="file" class="step_img" accept="image/*,video/*" th:field="*{steps[0].mediaFile}" />
+            <div class="step_preview_area">
+                <img class="step_preview_img" src="" alt="ステッププレビュー">
+            </div>
+            <button type="button" class="add">＋</button>
+            <button type="button" class="delete">×</button>
+        </div>
+    </div>
+
+    <input type="submit" value="作成" id="submit-button">
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const mainImg = document.querySelector('#main_img');
+    const previewImg = document.querySelector('#previewImg');
+
+    // メイン画像のプレビュー
+    mainImg.addEventListener('change', e => {
+        const file = e.target.files[0];
+        if(file){
+            const reader = new FileReader();
+            reader.onload = ev => { 
+                previewImg.src = ev.target.result; 
+                previewImg.style.display = 'block'; 
+            };
+            reader.readAsDataURL(file);
+        } else { 
+            previewImg.style.display = 'none'; 
+        }
+    });
+
+    const mateContainer = document.querySelector('#mate_container');
+    const stepContainer = document.querySelector('#step_container');
+
+    // 材料追加・削除
+    mateContainer.addEventListener('click', e => {
+        const target = e.target;
+        const CurrentBlock = target.closest('.block');
+        if(!CurrentBlock) return;
+
+        if(target.classList.contains('add')) add(CurrentBlock);
+        if(target.classList.contains('delete')) {
+            CurrentBlock.remove();
+            mateRenumber();
+        }
+    });
+
+    function add(CurrentBlock){
+        const index = mateContainer.querySelectorAll('.block').length;
+        const newBlock = document.createElement('div');
+        newBlock.className = 'block';
+        newBlock.innerHTML = `
+            <input type="text" name="ingredients[${index}].name">
+            <input type="text" name="ingredients[${index}].quantity">
+            <button type="button" class="add">+</button>
+            <button type="button" class="delete">×</button>
+        `;
+        CurrentBlock.insertAdjacentElement('afterend', newBlock);
+        mateRenumber();
+    }
+
+    function mateRenumber(){
+        const blocks = mateContainer.querySelectorAll('.block');
+        blocks.forEach((b,i) => {
+            if(i===0) return;
+            const nameInput = b.querySelector('input[name$=".name"]');
+            const qtyInput = b.querySelector('input[name$=".quantity"]');
+            if(nameInput) nameInput.name = `ingredients[${i}].name`;
+            if(qtyInput) qtyInput.name = `ingredients[${i}].quantity`;
+        });
+    }
+
+    // ステップ追加・削除
+    stepContainer.addEventListener('click', e => {
+        const target = e.target;
+        const currentBlock = target.closest('.block');
+        if(!currentBlock) return;
+
+        if(target.classList.contains('add')) addStepafter(currentBlock);
+        if(target.classList.contains('delete')) {
+            currentBlock.remove();
+            renumber();
+        }
+    });
+
+    // すべての step_img にプレビューを付与（イベント委譲）
+    stepContainer.addEventListener('change', e => {
+        if(!e.target.classList.contains('step_img')) return;
+        const file = e.target.files[0];
+        const img = e.target.closest('.block').querySelector('.step_preview_img');
+
+        if(file){
+            const reader = new FileReader();
+            reader.onload = ev => {
+                img.src = ev.target.result;
+                img.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            img.src = '';
+            img.style.display = 'none';
+        }
+    });
+
+    function addStepafter(CurrentBlock){
+        const index = stepContainer.querySelectorAll('.block').length;
+        const newBlock = document.createElement('div');
+        newBlock.className = 'block';
+        newBlock.innerHTML = `
+            <label>手順${index+1}</label>
+            <input type="text" name="steps[${index}].content">
+            <label>画像/動画</label>
+            <input type="file" class="step_img" accept="image/*,video/*" name="steps[${index}].mediaFile">
+            <div class="step_preview_area">
+                <img class="step_preview_img" src="" alt="ステッププレビュー">
+            </div>
+            <button type="button" class="add">＋</button>
+            <button type="button" class="delete">×</button>
+        `;
+        CurrentBlock.insertAdjacentElement('afterend', newBlock);
+        renumber();
+    }
+
+    function renumber(){
+        const blocks = stepContainer.querySelectorAll('.block');
+        blocks.forEach((b,i) => {
+            if(i===0) return;
+            const label = b.querySelector('label');
+            const contentInput = b.querySelector('input[name$=".content"]');
+            const fileInput = b.querySelector('input[name$=".mediaFile"]');
+            if(label) label.textContent = `手順${i+1}`;
+            if(contentInput) contentInput.name = `steps[${i}].content`;
+            if(fileInput) fileInput.name = `steps[${i}].mediaFile`;
+        });
+    }
+});
+</script>
+
 
 </body>
-<script>
-	document.addEventListener('DOMContentLoaded',()=>{
-		const mateContainer = document.querySelector('#mate_container');
-		const stepContainer = document.querySelector('#step_container');
-		stepContainer.addEventListener('click',(event)=>{
-			const target = event.target;
-			if(target.classList.contains('stepBtn')){
-				//クリックされた追加ボタンを引数に渡してaddStepAter呼び出し
-				const currentBlock = target.closest('.step_block');
-				addStepAfter(currentBlock);
-			}
-			if(target.classList.contains('deleteBtn')){
-				//削除要素をremove()してrenumber()呼び出し
-				const block = target.closest('.step_block');
-				block.remove();
-				renumber();
-			}
-		});
-		mateContainer.addEventListener('click',(event)=>{
-			const target = event.target;
-			if(target.classList.contains('addMate')){
-				//材料追加ボタンがおされたら
-				//新しくファーム生成
-				const currentBlock = target.closest('.mate_block');
-				addMate(currentBlock);
-			}
-			if(target.classList.contains('deleteMate')){
-				//材料削除ボタンがおされたら
-				//ブロックremove()して採番
-				const block = target.closest('.mate_block');
-				block.remove();
-				mateRenumber();
-			}
-		});
-		function addStepAfter(afterElement){
-				let stepIndex = document.querySelectorAll('.step_block').length;
-				const newElement = document.createElement("div");
-				newElement.className = 'step_block';
-				newElement.innerHTML=`
-				<label>手順${stepIndex+1}</label>
-				<input type="text" name="steps[${stepIndex}].content" class="deletable_input"/>
-				<label>画像${stepIndex+1}</label>
-				<input type="text" name="steps[${stepIndex}].img"/>
-				<button type="button" class="stepBtn">＋</button>
-				<button type="button" class="deleteBtn">×</button>
-				`;
-				//作ったブロックを今のブロック(afterElement)の直後に挿入
-				afterElement.insertAdjacentElement('afterend',newElement);
-				renumber();
-			}
-		function renumber(){
-			const blocks = document.querySelectorAll('.step_block');
-			blocks.forEach((block,index)=>{
-				if(index==0)return;//1個目はタイムリーフで生成されているから番号振り直し対象から除外
-				//手順番号のラベル、テキスト欄を取得
-				const label = block.querySelector('label');
-				const contentInput = block.querySelector('input[name$=".content"]');
-				const imgInput = block.querySelector('input[name$=".img"]');
-				//正しい番号の振り直し
-				if(label){
-					label.textContent = `手順${index+1}`;
-				}
-				if(contentInput)contentInput.name=`steps[${index}].content`;
-				if(imgInput)imgInput.name=`steps[${index}].img`;
-			});
-		}
-		function mateRenumber(){
-			const blocks = document.querySelectorAll('.mate_block');
-			blocks.forEach((block,index)=>{
-				if(index==0)return;
-				const mateName = block.querySelector('input[name$=".mateName"]');
-				const mateNumber = block.querySelector('input[name$=".amount"]');
-				if(mateName)mateName.name=`amos[${index}].mateName`;
-				if(mateNumber)mateNumber.name=`amos[${index}].amount`;
-			});
-		}
-		//材料なのでラベルの採番なし
-		function addMate(afterElement){
-			let arrIndex = document.querySelectorAll('.mate_block').length;
-			const newMaterial = document.createElement('div');
-			newMaterial.className = 'mate_block';
-			newMaterial.innerHTML=`
-			<input type="text" name="amos[${arrIndex}].mateName">
-			<input type="text" name="amos[${arrIndex}].amount"> 
-			
-			<button type="button" class="addMate">+</button>
-			<button type="button" class="deleteMate">×</button>
-			`;
-			afterElement.insertAdjacentElement('afterend',newMaterial);
-			mateRenumber();
-		}
-		
-		
-	});
-	
-	
-</script>
 </html>

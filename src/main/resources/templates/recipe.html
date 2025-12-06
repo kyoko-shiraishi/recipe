@@ -4,35 +4,53 @@
 <meta charset="UTF-8">
 <title>Insert title here</title>
 <!-- HTML側にCSRF情報を持たせる（例：metaタグ） -->
-<meta name="_csrf" th:content="${_csrf.token}">
-<meta name="_csrf_parameterName" th:content="${_csrf.parameterName}">
+<meta name="_csrf" th:content="${_csrf.token}"> 
+<meta name="_csrf_parameterName" th:content="${_csrf.parameterName}"> 
 
 </head>
 <body>
+<!--DBから
+	
+・レシピオブジェクト⇒${recipe}
+・ステップオブジェクトのリスト⇒${steps}
+・材料オブジェクトのリスト⇒${amos}
 
+で送られてきている
+
+-->
 <div th:if="recipe != null">
 	<h3>レシピ名</h3>
 	<p th:text="${recipe.name}"></p>
 	<h3>完成画像</h3>
-	<p th:text="${recipe.mainImg}"></p>
+	<img class="preview_img" 
+	     th:src="${recipe.mainImg != null} ? ${recipe.mainImg.path} : ''"/>
+
+	
+	
 	<h3>コメント</h3>
 	<p th:text="${recipe.comment}"></p>
 	<h3>材料</h3>
-		<div th:each="amo:${amos}">
-			<p th:text="${amo.mate.name}"></p>
-			<p th:text="${amo.amount}"></p>
+		<div th:each="recipe_ingredients:${recipe_ingredients}">
+			<p th:text="${recipe_ingredients.ingredient.name}"></p>
+			<p th:text="${recipe_ingredients.quantity}"></p>
 		</div>
-	<h3>作り方</h3>
-	<div th:each="step:${steps}">
-		<h3 th:text="${'手順'+step.stepNumber}"></h3>
-		<p th:text="${step.content}"></p>
-		<div th:if="${step.img !=null}">
-		<h3 th:text="${'画像'+step.stepNumber}"></h3>
-		<p th:text="${step.img}"></p>
+		<h3>作り方</h3>
+
+		<div th:each="step : ${steps}">
+		    
+		    <h4 th:text="'手順 ' + ${step.stepNumber}"></h4>
+		    <p th:text="${step.content}"></p>
+
+		    <div th:if="${step.img != null}">
+		        <h5 th:text="'画像 ' + ${step.stepNumber}"></h5>
+		        <img class="preview_img" th:src="@{${step.img.path}}" />
+		    </div>
+
 		</div>
-	</div>
-	<a th:href="@{/edit/{id}(id=${recipe.id})}"><button class="edit_btn">編集</button></a>
-	<button class="delete_btn" th:attr="data_id=${recipe.id}">削除</button>
+
+		<a class="edit_btn" th:href="@{/edit/{id}(id=${recipe.id})}">編集</a>
+		<button class="delete_btn" th:attr="data-id=${recipe.id}">削除</button>
+
 	
 </div>
 
@@ -40,28 +58,28 @@
 </body>
 <script>
 	window.addEventListener('DOMContentLoaded',()=>{
+		//ボタンを押したら、隠れた削除フォームを作ってPOST送信する
 		const deleteBtn = document.querySelector('.delete_btn');
 		deleteBtn.addEventListener('click',()=>{
-			const id = deleteBtn.getAttribute('data_id');
+			const id = deleteBtn.dataset.id;
 			if(confirm('本当にこのレシピを削除しますか？')){
 				const form = document.createElement('form');
 				form.method='post';
 				form.action=`/delete/${id}`;
 				document.body.appendChild(form);
-				// ✅ CSRFトークン取得（metaから）
-							const token = document.querySelector('meta[name="_csrf"]').content;
-							const param = document.querySelector('meta[name="_csrf_parameterName"]').content;
+				
 
-							// ✅ hidden inputを作って追加
-							const hiddenInput = document.createElement('input');
-							hiddenInput.type = 'hidden';
-							hiddenInput.name = param; // _csrf ではなく parameterName を使う！
-							hiddenInput.value = token;
-							form.appendChild(hiddenInput);
-
+				const token = document.querySelector('meta[name="_csrf"]').content;
+				const param = document.querySelector('meta[name="_csrf_parameterName"]').content;
+				const input = document.createElement('input');
+				input.type= 'hidden';
+				input.name = param;
+				input.value = token;
+				form.appendChild(input);					
 				form.submit();
 			}
 		});
+		
 		
 	});
 	

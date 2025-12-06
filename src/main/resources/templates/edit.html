@@ -2,169 +2,220 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
+<meta name="_csrf" th:content="${_csrf.token}">
+<meta name="_csrf_parameter_name" th:content="${_csrf.parameterName}">
 <title>レシピの変更</title>
+<style>
+  .preview_img { max-width: 200px; margin: 5px 0; display: block; }
+  .block { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+</style>
 </head>
 <body>
-	<div th:if="${data==null}">
-		<p th:text="${message}"></p>
-	</div>
-			<div th:if="${recipeRequest != null}">
-				<!--recipeRequest というDTOにバインドしてフォームを生成-->
-				<!--以降の th:field="*{プロパティ}" はすべてこの recipeRequest をベースにする-->
-				<form name="update" action="/edit" method="post" th:object="${recipeRequest}">
-					
-						<input type="hidden"  th:field="*{id}">
-						<h3>レシピ名</h3>
-						<input type="text" th:field="*{name}" >
-				
-						
-						<h3>コメント</h3>
-						<input type="text" th:field="*{comment}">
-						
-						<h3>完成画像</h3>
-						<input type="text" th:field="*{mainImg}">
-						<div id="mate_container">
-							
-									<label for="materials">材料</label>
-									<label for="amounts">数量</label>	
-									<p></p>
-							<div th:each = "amo,iterStat : *{amos}" class="mate_block">		
-									<input type="text" th:field="*{amos[__${iterStat.index}__].mateName}">
-									<input type="text" th:field="*{amos[__${iterStat.index}__].amount}">
-								<div th:if="${iterStat.index>0}">
-									<button type="button" class="addMate">+</button>
-									<button type="button" class="deleteMate">×</button> 
-								</div>
-							</div>
-						</div>
-						
-									
-						<p></p>   
-						<h3>作り方</h3>
-						<div id="step_container">
-							<!--iterStat.index で 0 からのインデックス番号-->
-							<div th:each="step,iterStat : *{steps}" class="step_block">
-									<h3 th:text="'手順'+${iterStat.index + 1}"></h3>
-									<!--steps[0].id, steps[1].id のように番号付きで送信される-->
-									<input type="hidden" th:field="*{steps[__${iterStat.index}__].id}" />
-									<input type="text" th:field="*{steps[__${iterStat.index}__].content}" />
-									
-									
-									
-									<h3 th:text="'画像'+${iterStat.index + 1}"></h3>
-									<input type="text" th:field="*{steps[__${iterStat.index}__].img}" />
-								<div th:if="${iterStat.index>0}">
-									<button type="button" class="stepBtn">+</button>
-									<button type="button" class="deleteBtn">×</button>
-								</div>
-							</div>
-						</div>
-						<p></p>
-						
-						<p></p>
-						<input type="submit"  value="更新"/>
-						
-				</form>
-				
-			</div>
-	
-</body>
+
+<div th:if="${data==null}">
+    <p th:text="${message}"></p>
+</div>
+
+<div th:if="${recipeDTO != null}">
+<form name="update" th:action="@{/edit}" method="post"
+      th:object="${recipeDTO}" enctype="multipart/form-data">
+
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+    <input type="hidden" th:field="*{id}">
+
+    <h3>レシピ名</h3>
+    <input type="text" th:field="*{name}">
+
+    <h3>コメント</h3>
+    <input type="text" th:field="*{comment}">
+
+    <h3>完成画像</h3>
+    <input type="file" id="main_img" th:field="*{mainImg}" accept="image/*">
+    <input type="hidden" th:if="${recipeDTO.existingMainImgId != null}" th:field="*{existingMainImgId}">
+
+    <div id="preview_area">
+        <img id="preview_main_img" 
+		th:if="${recipeDTO.existingMainImgPath != null}"
+        th:src="@{${recipeDTO.existingMainImgPath}}" alt="プレビュー画像">
+    </div>
+
+    <!-- 材料 -->
+    <div id="ingredient_container">
+        <label>材料</label>
+        <label>数量</label>
+        <p></p>
+        <div th:each="ing, iterStat : *{ingredients}" class="block">
+            <input type="text" th:field="*{ingredients[__${iterStat.index}__].name}">
+            <input type="text" th:field="*{ingredients[__${iterStat.index}__].quantity}">
+            <button type="button" class="add">+</button>
+            <button type="button" class="delete">×</button>
+        </div>
+    </div>
+
+    <h3>作り方</h3>
+    <div id="step_container">
+
+        <!-- ステップ0件の場合の初期ブロック -->
+        <div th:if="${#lists.isEmpty(recipeDTO.steps)}" class="block">
+            <h3>手順1</h3>
+            <input type="text" name="steps[0].content">
+            <input type="file" name="steps[0].mediaFile" class="step_img">
+            <img class="preview_img" src="">
+            <button type="button" class="add">+</button>
+            <button type="button" class="delete">×</button>
+            <button type="button" class="remove_img">画像削除</button>
+        </div>
+
+        <!-- 既存ステップ -->
+        <div th:each="step, iterStat : *{steps}" class="block">
+            <h3 th:text="'手順' + ${iterStat.index + 1}"></h3>
+            <input type="hidden" th:field="*{steps[__${iterStat.index}__].id}">
+            <input type="text" th:field="*{steps[__${iterStat.index}__].content}">
+            <h3 th:text="'画像' + ${iterStat.index + 1}"></h3>
+            <input type="file" th:field="*{steps[__${iterStat.index}__].mediaFile}" class="step_img">
+            <input type="hidden" th:if="*{steps[__${iterStat.index}__].existingImgId != null}"
+                   th:field="*{steps[__${iterStat.index}__].existingImgId}">
+            <img class="preview_img"
+                 th:src="${step.existingImgPath} != null ? @{${step.existingImgPath}} : ''"
+                 alt="手順画像">
+				 <input type="hidden" th:field="*{steps[__${iterStat.index}__].removeImg}" class="remove_img_flag" value="false">
+            <button type="button" class="add">＋</button>
+            <button type="button" class="delete">×</button>
+            <button type="button" class="remove_img">画像削除</button>
+        </div>
+
+    </div>
+
+    <p></p>
+    <input type="submit" value="更新">
+</form>
+</div>
+
 <script>
-	document.addEventListener('DOMContentLoaded',()=>{
-		const mateContainer = document.querySelector('#mate_container');
-		const stepContainer = document.querySelector('#step_container');
-		stepContainer.addEventListener('click',(event)=>{
-			const target = event.target;
-			if(target.classList.contains('stepBtn')){
-				//クリックされた追加ボタンを引数に渡してaddStepAter呼び出し
-				const currentBlock = target.closest('.step_block');
-				addStepAfter(currentBlock);
+document.addEventListener('DOMContentLoaded', () => {
+    const csrfToken = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    const csrfParam = document.querySelector('meta[name="_csrf_parameter_name"]').getAttribute('content');
+
+    // メイン画像プレビュー
+    const mainImgInput = document.querySelector('#main_img');
+    const mainPreviewImg = document.querySelector('#preview_main_img');
+    if (mainImgInput && mainPreviewImg) attachStepPreview(mainImgInput, mainPreviewImg);
+
+    // 材料ブロック
+    const IngredientContainer = document.querySelector('#ingredient_container');
+    if (IngredientContainer) {
+        IngredientContainer.addEventListener('click', (event) => {
+            const target = event.target;
+            if (target.classList.contains('add')) addIngredient(target.closest('.block'));
+            if (target.classList.contains('delete')) { target.closest('.block').remove(); IngredientRenumber(); }
+        });
+    }
+    function add(currentBlock){
+        let arrIndex = document.querySelectorAll('#ingredient_container .block').length;
+        const newBlock = document.createElement('div');
+        newBlock.className = 'block';
+        newBlock.innerHTML=`
+            <input type="text" name="ingredients[${arrIndex}].name">
+            <input type="text" name="ingredients[${arrIndex}].quantity">
+            <button type="button" class="add">+</button>
+            <button type="button" class="delete">×</button>
+        `;
+        currentBlock.insertAdjacentElement('afterend', newBlock);
+        IngredientRenumber();
+    }
+    function IngredientRenumber(){
+        const blocks = IngredientContainer.querySelectorAll('.block');
+        blocks.forEach((block,index)=>{
+            const name = block.querySelector('input[name$=".name"]');
+            const quantity = block.querySelector('input[name$=".quantity"]');
+            if(name) name.name=`ingredients[${index}].name`;
+            if(quantity) quantity.name=`ingredients[${index}].quantity`;
+        });
+    }
+
+    // 作り方ステップ
+    const stepContainer = document.querySelector('#step_container');
+    if (stepContainer) {
+        stepContainer.addEventListener('click', (event) => {
+            const target = event.target;
+            const block = target.closest('.block');
+            if (!block) return;
+
+            if(target.classList.contains('add')) addStepAfter(block);
+            if(target.classList.contains('delete')) { block.remove(); renumberSteps(); }
+
+            // 画像削除
+			if(target.classList.contains('remove_img')) {
+			    const preview = block.querySelector('.preview_img');
+			    const fileInput = block.querySelector('input[type=file].step_img');
+			    const hiddenImgId = block.querySelector('input[type=hidden][name$=".existingImgId"]');
+			    const removeFlag = block.querySelector('input[type=hidden][name$=".removeImg"]');
+
+			    if(preview) preview.src = "";
+			    if(fileInput) fileInput.value = "";
+			    if(hiddenImgId) hiddenImgId.value = "";       // 既存画像IDは空に
+			    if(removeFlag) removeFlag.value = "true";    // 削除フラグを true に
 			}
-			if(target.classList.contains('deleteBtn')){
-				//削除要素をremove()してrenumber()呼び出し
-				const block = target.closest('.step_block');
-				block.remove();
-				renumber();
-			}
-		});
-		mateContainer.addEventListener('click',(event)=>{
-			const target = event.target;
-			if(target.classList.contains('addMate')){
-				//材料追加ボタンがおされたら
-				//新しくファーム生成
-				const currentBlock = target.closest('.mate_block');
-				addMate(currentBlock);
-			}
-			if(target.classList.contains('deleteMate')){
-				//材料削除ボタンがおされたら
-				//ブロックremove()して採番
-				const block = target.closest('.mate_block');
-				block.remove();
-				mateRenumber();
-			}
-		});
-		function addStepAfter(afterElement){
-				let stepIndex = document.querySelectorAll('.step_block').length;
-				const newElement = document.createElement("div");
-				newElement.className = 'step_block';
-				newElement.innerHTML=`
-				<label>手順${stepIndex+1}</label>
-				<input type="text" name="steps[${stepIndex}].content" class="deletable_input"/>
-				<label>画像${stepIndex+1}</label>
-				<input type="text" name="steps[${stepIndex}].img"/>
-				<button type="button" class="stepBtn">＋</button>
-				<button type="button" class="deleteBtn">×</button>
-				`;
-				//作ったブロックを今のブロック(afterElement)の直後に挿入
-				afterElement.insertAdjacentElement('afterend',newElement);
-				renumber();
-			}
-		function renumber(){
-			const blocks = document.querySelectorAll('.step_block');
-			blocks.forEach((block,index)=>{
-				if(index==0)return;//1個目はタイムリーフで生成されているから番号振り直し対象から除外
-				//手順番号のラベル、テキスト欄を取得
-				const label = block.querySelector('label');
-				const contentInput = block.querySelector('input[name$=".content"]');
-				const imgInput = block.querySelector('input[name$=".img"]');
-				//正しい番号の振り直し
-				if(label){
-					label.textContent = `手順${index+1}`;
-				}
-				if(contentInput)contentInput.name=`steps[${index}].content`;
-				if(imgInput)imgInput.name=`steps[${index}].img`;
-			});
-		}
-		function mateRenumber(){
-			const blocks = document.querySelectorAll('.mate_block');
-			blocks.forEach((block,index)=>{
-				if(index==0)return;
-				const mateName = block.querySelector('input[name$=".mateName"]');
-				const mateNumber = block.querySelector('input[name$=".amount"]');
-				if(mateName)mateName.name=`amos[${index}].mateName`;
-				if(mateNumber)mateNumber.name=`amos[${index}].amount`;
-			});
-		}
-		//材料なのでラベルの採番なし
-		function addMate(afterElement){
-			let arrIndex = document.querySelectorAll('.mate_block').length;
-			const newMaterial = document.createElement('div');
-			newMaterial.className = 'mate_block';
-			newMaterial.innerHTML=`
-			<input type="text" name="amos[${arrIndex}].mateName">
-			<input type="text" name="amos[${arrIndex}].amount"> 
-			
-			<button type="button" class="addMate">+</button>
-			<button type="button" class="deleteMate">×</button>
-			`;
-			afterElement.insertAdjacentElement('afterend',newMaterial);
-			mateRenumber();
-		}
-		
-		
-	});
-	
-	
+
+        });
+    }
+
+    function addStepAfter(currentBlock){
+        let stepIndex = stepContainer.querySelectorAll('.block').length;
+        const newBlock = document.createElement('div');
+        newBlock.className='block';
+        newBlock.innerHTML=`
+            <h3>手順${stepIndex+1}</h3>
+            <input type="text" name="steps[${stepIndex}].content">
+            <input type="file" name="steps[${stepIndex}].mediaFile" class="step_img">
+            <img class="preview_img" src="">
+            <button type="button" class="add">＋</button>
+            <button type="button" class="delete">×</button>
+            <button type="button" class="remove_img">画像削除</button>
+        `;
+        currentBlock.insertAdjacentElement('afterend', newBlock);
+        attachStepPreview(newBlock.querySelector('.step_img'), newBlock.querySelector('.preview_img'));
+        renumberSteps();
+    }
+
+    function renumberSteps(){
+        const blocks = stepContainer.querySelectorAll('.block');
+        blocks.forEach((block,index)=>{
+            const title = block.querySelector('h3'); if(title) title.textContent=`手順${index+1}`;
+            const content = block.querySelector('input[name$=".content"]'); if(content) content.name=`steps[${index}].content`;
+            const img = block.querySelector('input[name$=".mediaFile"]'); if(img) img.name=`steps[${index}].mediaFile`;
+        });
+    }
+
+    // ファイル→imgプレビュー
+    function attachStepPreview(input,img){
+        if(!input || !img) return;//ファイル、表示場所どっちかでも無かったらプレビューできないので処理を中断
+        input.addEventListener('change', e=>{
+			//.files → 選ばれたファイルの配列
+			//files[0] → 最初の 1 件（画像は基本 1 枚）
+            const file = e.target.files[0];
+            if(file){
+				//FileReader:「PCのファイルをブラウザで読めるようにするやつ」
+                const reader = new FileReader();
+				//reader が読み込み終わったときev.target.result に base64画像データ が入る
+				//それを <img> の src にぶち込むことで画像が即時プレビューされる！
+				reader.onload = ev => { 
+					previewImg.src = ev.target.result; 
+					previewImg.style.display = 'block'; 
+				};
+                reader.readAsDataURL(file);
+            } else {img.src="";}
+        });
+    }
+
+    // 既存ステッププレビュー紐付け
+    if(stepContainer){
+        stepContainer.querySelectorAll('.block').forEach(block=>{
+            attachStepPreview(block.querySelector('.step_img'), block.querySelector('.preview_img'));
+        });
+    }
+});
 </script>
 
+</body>
 </html>
