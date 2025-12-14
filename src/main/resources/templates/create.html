@@ -71,12 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
     mainImg.addEventListener('change', e => {
         const file = e.target.files[0];
         if(file){
-            const reader = new FileReader();
-            reader.onload = ev => { 
-                previewImg.src = ev.target.result; 
+            const objectURL = URL.createObjectURL(file);
+           
+                previewImg.src = objectURL; 
                 previewImg.style.display = 'block'; 
-            };
-            reader.readAsDataURL(file);
+           
         } else { 
             previewImg.style.display = 'none'; 
         }

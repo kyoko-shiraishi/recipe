@@ -30,10 +30,10 @@ public class NewController {
 	
 	@PostMapping("/create")
 	public String post(
-	    @ModelAttribute("recipe_request")  RecipeDTO recipe_request, 
+	    @ModelAttribute("recipeDTO")  RecipeDTO recipeDTO, 
 	   RedirectAttributes redirectAttributes) {
 		try {
-        recipeService.createFromForm(recipe_request);
+        recipeService.createFromForm(recipeDTO);
         // // リダイレクト後の画面で使う「成功メッセージ」を一時保存
         redirectAttributes.addFlashAttribute("result","新しいレシピを追加！");
         	}

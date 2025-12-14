@@ -25,12 +25,14 @@ private final CateRepository cate_repository;
 private final Recipe_IngredietRepository recipe_ingredient_repository;
 private final SynonymService syno_service;
 private final SaveImgService saved_img_service;
-private final NewRecipeService new_recipe_service;
-private final BuildStepsService build_steps_service;
+private final IngredientLookup ingredient_lookup;
+private final Recipe_IngredientFactory recipe_ingredient_factory;
+private final  NewOrOldImg new_old_img;
 public RecipeService(RecipeRepository repository,ImgRepository img_repository,
 		StepRepository step_repository,IngredientRepository mate_repository,CateRepository cate_repository,
 		Recipe_IngredietRepository amo_repository,SynonymService syno_service,SaveImgService saved_img_service,
-		NewRecipeService new_recipe_service,BuildStepsService build_steps_service) {
+		NewRecipeService new_recipe_service,BuildStepsService build_steps_service,IngredientLookup ingredient_lookup,
+		Recipe_IngredientFactory recipe_ingredient_factory,NewOrOldImg new_old_img) {
 	this.repository = repository;
 	this.img_repository = img_repository;
 	this.step_repository = step_repository;
@@ -39,8 +41,9 @@ public RecipeService(RecipeRepository repository,ImgRepository img_repository,
 	this.recipe_ingredient_repository = amo_repository;
 	this.syno_service = syno_service;
 	this.saved_img_service=saved_img_service;
-	this.new_recipe_service = new_recipe_service;
-	this.build_steps_service = build_steps_service;
+	this.ingredient_lookup= ingredient_lookup;
+	this.recipe_ingredient_factory = recipe_ingredient_factory;
+	this.new_old_img = new_old_img;
 }
 
 
@@ -84,12 +87,10 @@ public void createFromForm(RecipeDTO recipeDTO) throws IOException {
 // ====== メイン画像およびRecipe 作成 ======
 	MultipartFile mainImgFile = recipeDTO.getMainImg();
 	Img mainImgEntity = saved_img_service.saveAndRegister(mainImgFile);
-	//組み立てはnew_recipe_serviceの責務
-	Recipe new_recipe = new_recipe_service.createRecipe(recipeDTO, mainImgEntity);
-	//保存は Repository の責務
-	Recipe recipe = repository.save(new_recipe);
+	Recipe recipe = new Recipe();
+	NewRecipeService.of(recipeDTO,recipe , mainImgEntity);
+	Recipe new_recipe = repository.save(recipe);
 //====== 手順の保存 ======
-
     int stepNum = 1;
     List<RecipeDTO.StepDTO> list = recipeDTO.getSteps();
     List<Step> new_steps = new ArrayList<>();
@@ -97,48 +98,30 @@ public void createFromForm(RecipeDTO recipeDTO) throws IOException {
     	RecipeDTO.StepDTO step_dto = list.get(i);
     	MultipartFile mediaFile = step_dto.getMediaFile();
     	Img step_img =saved_img_service.saveAndRegister(mediaFile);
-    	 Step new_step = build_steps_service.buildSteps(step_dto, step_img, recipe, stepNum);
+    	 Step new_step = BuildStepsService.of(step_dto, step_img, new_recipe, stepNum);
     	new_steps.add(new_step);
     	stepNum++;
     }
     step_repository.saveAll(new_steps);
-	    	
-	    	    
-
 // ====== 材料の保存 ======
     List<RecipeDTO.Recipe_IngredientDTO> ingredients = recipeDTO.getIngredients();
-    List<String> tempList = new ArrayList<>();
+    List<Recipe_Ingredient> recipe_ingredient_list = new ArrayList<>();
     //IngredientDTOリストを回していく
-    List<Recipe_Ingredient> recipe_ingredientList = ingredients.stream().map(in -> {
-        Recipe_Ingredient newRecipe_Ingredient = new Recipe_Ingredient ();
-        //banana（正規化できるなら正規化にしてから検索）がにあるか
-        String rawName = in.getName();
-        String name = syno_service.normalize(rawName);
-        if (optionalIngredient.isPresent()) {
-        	newRecipe_Ingredient.setIngredient(optionalIngredient.get());
-        } else {
-        	//新規材料は仮材料としてあたらしく材料オブジェクトを作る
-            Ingredient tempIng = new Ingredient();
-            tempIng.setTempMate(true);
-            tempIng.setName(in.getName());
-            Ingredient savedTempMate = ingredient_repository.save(tempIng);
-            newRecipe_Ingredient.setIngredient(savedTempMate);
-            tempList.add(savedTempMate.getName());
-        }
-
-        newRecipe_Ingredient.setRecipe(recipe);
-        newRecipe_Ingredient.setQuantity(in.getQuantity());
-        return newRecipe_Ingredient;
-    }).collect(Collectors.toList());
-
-    recipe_ingredient_repository.saveAll(recipe_ingredientList);
-
-    // 管理者に通知
-    for (String i : tempList) {
-        System.out.println("新規材料: " + i);
+    for(int i=0;i<ingredients.size();i++) {
+    	RecipeDTO.Recipe_IngredientDTO ingdto = ingredients.get(i);
+    	//DTOから材料名取得
+        String rawName = ingdto.getName();
+        //材料名正規化した結果を格納
+        NormalizeResult res = syno_service.normalize(rawName);
+        //材料名から既存材料を取得または新規材料を作る
+        Ingredient ing = ingredient_lookup.findOrCreateIng(res);
+        //材料と記入名、量をセット
+        Recipe_Ingredient ri = recipe_ingredient_factory.build_recipe_ingredient(new_recipe, ing, rawName, ingdto);
+        recipe_ingredient_list.add(ri);
     }
-    }
+    recipe_ingredient_repository.saveAll(recipe_ingredient_list);
 
+}
 
 //レシピ詳細閲覧用。そのレシピの材料と量のオブジェクトを返す
 public List<Recipe_Ingredient> findByRecipe(Long id) {
@@ -146,7 +129,7 @@ public List<Recipe_Ingredient> findByRecipe(Long id) {
 	return  recipe_ingredient;
 }
 
-@Transactional
+
 //データをDTOに詰め替え
 public RecipeDTO convertToDto(Recipe recipe, List<Step> steps, List<Recipe_Ingredient> recipe_ingredients) {
     RecipeDTO dto = new RecipeDTO();
@@ -196,36 +179,16 @@ public void editFromForm(RecipeDTO dto) throws IOException {
 // メイン画像を準備(saved_main_imgとして持っておく)
     MultipartFile mainImgFile = dto.getMainImg();
     Long existingMainImgId = dto.getExistingMainImgId();
-	  //メイン画像（新規）だった場合
-    Img  saved_mainImg = saved_img_service.saveAndRegister(mainImgFile);
-	  //メイン画像(既存)だった場合
-	    if(saved_mainImg==null&&existingMainImgId != null) {					
-	    	saved_mainImg = img_repository.findById(existingMainImgId).orElse(null);
-	    }
-
+    Img mainImg = new_old_img.createImg(mainImgFile, existingMainImgId);
 // レシピ更新
 	//idからRecipeオブジェクトを取得
     Recipe recipe = repository.findById(dto.getId()).orElseThrow();
-    
-    //Recipeオブジェクト「name」のセット
-    recipe.setName(dto.getName());
-    
-    //Recipeオブジェクト「comment」のセット
-    recipe.setComment(dto.getComment());
-    
-    //Recipeオブジェクト「mainImg」のセット(さっき準備したやつを入れる)
-     recipe.setMainImg(saved_mainImg);
-    
-    //Recipeオブジェクト保存
+    NewRecipeService.of(dto, recipe,mainImg);
     Recipe savedRecipe = repository.save(recipe);
 
 // ステップ更新
     Step savedStep = new Step();
-    
-    //使わない(DTOから指定されなかった)ステップはDBから消したい
-    //→既存マップでふりおとし！
-	//キー：値＝ID：Stepオブジェクト
-	    Map<Long, Step> oldStepMap = step_repository.findByRecipeId(savedRecipe.getId())
+	Map<Long, Step> oldStepMap = step_repository.findByRecipeId(savedRecipe.getId())
 	            .stream().collect(Collectors.toMap(Step::getId, s -> s));
 	    
 	 //手順番号インデックスの初期化
@@ -245,7 +208,6 @@ public void editFromForm(RecipeDTO dto) throws IOException {
             step.setRecipe(savedRecipe);
         }
       //画像処理
-        MultipartFile mediaFile = stepDto.getMediaFile();
 	   //画像（削除）だった場合
         if (stepDto.isRemoveImg()) {
             Img oldImg = step.getImg();
@@ -256,12 +218,11 @@ public void editFromForm(RecipeDTO dto) throws IOException {
 		            
 	   //画像（使う）だった場合
         }else{
-        	Img img = saved_img_service.saveAndRegister(mainImgFile);     
-        	if(img==null&&stepDto.getExistingImgId() != null) {
-        		img  = img_repository.findById(stepDto.getExistingImgId()).orElse(null);
-        	}
-            step.setImg(img);
-        }      
+            MultipartFile mediaFile = stepDto.getMediaFile();
+            Long existing = stepDto.getExistingImgId();
+            Img step_img = new_old_img.createImg(mediaFile,existing);
+            step.setImg(step_img);
+        }
         step.setStepNumber(stepIndex++);
         step.setContent(stepDto.getContent());  
     //Stepオブジェクトを保存
@@ -270,50 +231,32 @@ public void editFromForm(RecipeDTO dto) throws IOException {
 
 
 //材料   
-    //既存マップ作成
+    //既存材料マップ作成
     Map<Long, Recipe_Ingredient> oldAmountMap = recipe_ingredient_repository.findByRecipeId(savedRecipe.getId())
             .stream().collect(Collectors.toMap(Recipe_Ingredient::getId, a -> a));
-    List<String> tempList = new ArrayList<>();
+
     
     //DTOリストを回して各DTOを見ていく
     for (RecipeDTO.Recipe_IngredientDTO recipe_ingredientDTO : dto.getIngredients()) {
-        Recipe_Ingredient newRecipe_Ingredient;
-    //既存オブジェクト使いまわし
-        if (recipe_ingredientDTO.getId() != null && oldAmountMap.containsKey(recipe_ingredientDTO.getId())) {
-        	newRecipe_Ingredient = oldAmountMap.remove(recipe_ingredientDTO.getId());
-        }
-    //新規材料オブジェクト
-        else 
-        {
-        	newRecipe_Ingredient = new Recipe_Ingredient();
-        	newRecipe_Ingredient.setRecipe(recipe);
-        }
- 
-        //シノニムチェック
-        Ingredient ing;
-        String ingName = syno_service.normalize(recipe_ingredientDTO.getName());
-        Optional< Ingredient> OptionalMate = ingredient_repository.findByName(ingName);
-                if(OptionalMate.isPresent()) {
-                   ing = OptionalMate.get();
-                }else{
-                	Ingredient tempMate = new Ingredient();//仮フラグを立てたうえでのnew Ingredient
-                    tempMate.setTempMate(true);
-                    tempMate.setName(recipe_ingredientDTO.getName());
-                    tempList.add(recipe_ingredientDTO.getName());
-                   ing =  ingredient_repository.save(tempMate);
-                }
-        newRecipe_Ingredient.setIngredient(ing);
-        newRecipe_Ingredient.setQuantity(recipe_ingredientDTO.getQuantity());
+    	Recipe_Ingredient newRecipe_Ingredient;
+    	if (recipe_ingredientDTO.getId() != null && oldAmountMap.containsKey(recipe_ingredientDTO.getId())) {
+    	    newRecipe_Ingredient = oldAmountMap.remove(recipe_ingredientDTO.getId()); // 既存
+    	} else {
+    	    String rawName = recipe_ingredientDTO.getName();
+    	    NormalizeResult res = syno_service.normalize(rawName);
+    	    Ingredient ing = ingredient_lookup.findOrCreateIng(res);
+    	    newRecipe_Ingredient = recipe_ingredient_factory.build_recipe_ingredient(savedRecipe, ing, rawName, recipe_ingredientDTO);
+    	}
+    	recipe_ingredient_repository.save(newRecipe_Ingredient);
 
-        recipe_ingredient_repository.save(newRecipe_Ingredient);
     }
+    
 
     // 削除された材料・ステップ
     oldStepMap.values().forEach(step_repository::delete);
     oldAmountMap.values().forEach(recipe_ingredient_repository::delete);
 
-    // 管理者通知
-    tempList.forEach(System.out::println);
+
 
 }
 	//本登録のみの材料リスト

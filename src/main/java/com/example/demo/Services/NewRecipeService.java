@@ -7,13 +7,13 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class NewRecipeService {
+	private NewRecipeService() {}
 	
-	public Recipe createRecipe(RecipeDTO dto,Img mainImgEntity) {
-		Recipe recipe = new Recipe();
-		recipe.setName(dto.getName());
-	    recipe.setComment(dto.getComment());
-	    recipe.setMainImg(mainImgEntity);
-	    return recipe;
+	public static void of(RecipeDTO dto,Recipe r,Img mainImgEntity) {
+
+		r.setName(dto.getName());
+	    r.setComment(dto.getComment());
+	    r.setMainImg(mainImgEntity);
 	}
 	
 }

@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class BuildStepsService {
-public Step buildSteps(RecipeDTO.StepDTO sdto,Img step_img,Recipe recipe,int stepNum) {
-	Step step = new Step();
-	step.setImg(step_img);
-	step.setStepNumber(stepNum);
-	step.setContent(sdto.getContent());
-	step.setRecipe(recipe);
-	return step;
-}
+    private BuildStepsService() {} // new禁止（ユーティリティパターン）
+
+    public static Step of(RecipeDTO.StepDTO dto, Img img, Recipe recipe, int stepNum) {
+        Step step = new Step();
+        step.setImg(img);
+        step.setStepNumber(stepNum);
+        step.setContent(dto.getContent());
+        step.setRecipe(recipe);
+        return step;
+    }
 }

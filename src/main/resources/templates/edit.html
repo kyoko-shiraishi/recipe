@@ -31,7 +31,7 @@
 
     <h3>完成画像</h3>
     <input type="file" id="main_img" th:field="*{mainImg}" accept="image/*">
-    <input type="hidden" th:if="${recipeDTO.existingMainImgId != null}" th:field="*{existingMainImgId}">
+    <input type="hidden" th:field="*{existingMainImgId}">
 
     <div id="preview_area">
         <img id="preview_main_img" 
@@ -73,8 +73,10 @@
             <input type="text" th:field="*{steps[__${iterStat.index}__].content}">
             <h3 th:text="'画像' + ${iterStat.index + 1}"></h3>
             <input type="file" th:field="*{steps[__${iterStat.index}__].mediaFile}" class="step_img">
+			
             <input type="hidden" th:if="*{steps[__${iterStat.index}__].existingImgId != null}"
                    th:field="*{steps[__${iterStat.index}__].existingImgId}">
+				   
             <img class="preview_img"
                  th:src="${step.existingImgPath} != null ? @{${step.existingImgPath}} : ''"
                  alt="手順画像">
@@ -195,16 +197,13 @@ document.addEventListener('DOMContentLoaded', () => {
 			//files[0] → 最初の 1 件（画像は基本 1 枚）
             const file = e.target.files[0];
             if(file){
-				//FileReader:「PCのファイルをブラウザで読めるようにするやつ」
-                const reader = new FileReader();
-				//reader が読み込み終わったときev.target.result に base64画像データ が入る
-				//それを <img> の src にぶち込むことで画像が即時プレビューされる！
-				reader.onload = ev => { 
-					previewImg.src = ev.target.result; 
+                const objectURL = URL.createObjectURL(file); 
+					previewImg.src = objectURL;
 					previewImg.style.display = 'block'; 
-				};
-                reader.readAsDataURL(file);
-            } else {img.src="";}
+
+            } else {
+				img.src="";
+			}
         });
     }
 

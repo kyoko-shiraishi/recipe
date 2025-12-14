@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import com.example.demo.Services.RecipeService;
 import com.example.demo.Services.SynonymService;
-import com.example.demo.Entities.Recipe;
+import com.example.demo.Entities.*;
 
 import java.util.List;
 
@@ -39,8 +39,8 @@ import java.util.List;
  	public  ModelAndView search(ModelAndView mav,@RequestParam("dish-name") String keyword) {
  		mav.setViewName("index");
  		mav.addObject("hoge",keyword);
- 		String canonical = synonymService.normalize(keyword);
- 		List<Recipe> search_rslt = recipeService.findByNameContaining(canonical);
+ 		NormalizeResult res = synonymService.normalize(keyword);
+ 		List<Recipe> search_rslt = recipeService.findByNameContaining(res.canonicalName());
  		mav.addObject("data" ,search_rslt);
  		return mav;
  	}

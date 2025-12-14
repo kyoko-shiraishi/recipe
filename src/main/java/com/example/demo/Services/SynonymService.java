@@ -3,6 +3,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.Entities.Synonym;
 import com.example.demo.repository.*;
+import com.example.demo.Entities.*;
 import java.util.Optional;
 import java.util.List;
 import java.util.ArrayList;
@@ -20,11 +21,13 @@ public class SynonymService {
 	
 	//シノニム⇒正規名変換メソッド
 	@Transactional(readOnly = true)
-	public String normalize(String keyword) {
-		//見つかれば正規名（canonical）に変換して返す
-		//見つからなければ入力のまま返す
+	public  NormalizeResult normalize(String keyword) {
 		Optional<String> name = synonymRepository.findRightIngredientNameByKeyword(keyword);
-		return name.orElse(keyword);
+		if(name.isPresent()) {
+			return new NormalizeResult(true,keyword,name.get());
+		}else {
+			return new NormalizeResult(false,keyword,null);
+		}
 		
 	}
 	@Transactional(readOnly= true)
