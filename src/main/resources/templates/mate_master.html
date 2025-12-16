@@ -27,23 +27,37 @@
 	    cursor: pointer;
 	    color: gray;
 	  }
-	#ing_info_items{
-		display: flex;
+
+	  #header {
+	    position: fixed;
+	    top: 0;
+	    left: 0;
+	    width: 100%;
+	    padding: 10px 20px;
+	    border-bottom: 2px solid darkcyan;
+	    background-color: white;
+	    box-sizing: border-box;
+	    z-index: 1000;
+	  }
+	
+	#main_contents{
+		margin: 60px 0 100px;
+
 	}
-	#ing_info_items div{
-		padding-top: 40px;
-		padding-right: 30px;
+	#tempo_footer{
+		
 	}
 </style>
 
 </head>
 <body>
-	<!--メインコンテンツ。カテゴリ、材料名、シノニムの一覧表示-->
+
 	<div id="header">
 		
-		<button id="openModalBtn">シノニム辞書を開く</button><!--ボタン1個しかない から、ピンポイントで取れるように id-->
+		<button id="openModalBtn">シノニム辞書を開く</button>
 		<!--モーダル本体-->
 		<div id="myModal" class="modal">
+			
 			<div class="modal-content">
 				<span id="closeModalBtn" class="close-btn">×</span>
 				<h2>シノニム辞書</h2>
@@ -53,31 +67,38 @@
 			
 		</div>
 	</div>
+	
+	
 	<div id="main_contents">
 	    <h2>材料一覧</h2>
-	    <ul>
-	        <li th:each="ing : ${IngInfo}" id="ing_info_items">
-	            <div>カテゴリ: <span th:text="${ing.category}"></span></div>
-	            <div>材料名: <span th:text="${ing.name}"></span></div>
-	            <div th:if="${ing.synonyms != null and !ing.synonyms.isEmpty()}">
-	                シノニム:
-	                <span th:each="syn, stat : ${ing.synonyms}" 
-	                      th:text="${syn} + ${stat.last ? '' : ', '}"></span>
-	            </div>
-	        </li>
-	    </ul>
+		<table>
+			<tr>
+				<th>カテゴリ</th><th>材料名</th><th>シノニム</th>
+			</tr>
+			
+			<tr th:each="ing : ${IngInfo}" class="ing_info_items">           
+				<td th:text="${ing.category}"></td>
+				<td th:text="${ing.name}"></td>
+				<td>
+			        <span th:if="${!#lists.isEmpty(ing.synonyms)}"
+			              th:each="syn, stat : ${ing.synonyms}"
+			              th:text="${syn} + ${stat.last ? '' : ', '}">
+			        </span>
+		     	</td>
+			</tr>
+		</table>
 	</div>
+		
 
-	<!--
 <div id="tempo_footer">
 	<h2>仮登録材料一覧</h2>	
-		<div th:each="temp:${tempDatas}">o
+		<div th:each="temp:${temp_list}">
 			<p th:text="${temp.name}"></p>
-	</div>	
+		</div>	
 </div>
-<-->
+
 </body>
-<!--<script>
+<script>
 	document.addEventListener("DOMContentLoaded",()=>{
 		const openModal = document.querySelector('#openModalBtn');
 		const modal = document.querySelector('.modal');
@@ -97,5 +118,5 @@
 		});
 	});
 </script>
-<-->
+
 </html>

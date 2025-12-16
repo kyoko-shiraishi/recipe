@@ -1,8 +1,6 @@
 package com.example.demo.Services;
 import java.util.*;
 import java.lang.Long;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.io.IOException;
@@ -176,47 +174,33 @@ public RecipeDTO convertToDto(Recipe recipe, List<Step> steps, List<Recipe_Ingre
 
 @Transactional
 public void editFromForm(RecipeDTO dto) throws IOException {
-// メイン画像を準備(saved_main_imgとして持っておく)
     MultipartFile mainImgFile = dto.getMainImg();
     Long existingMainImgId = dto.getExistingMainImgId();
     Img mainImg = new_old_img.createImg(mainImgFile, existingMainImgId);
-// レシピ更新
-	//idからRecipeオブジェクトを取得
+    // レシピ更新
     Recipe recipe = repository.findById(dto.getId()).orElseThrow();
     NewRecipeService.of(dto, recipe,mainImg);
     Recipe savedRecipe = repository.save(recipe);
-
-// ステップ更新
-    Step savedStep = new Step();
+    // ステップ更新
 	Map<Long, Step> oldStepMap = step_repository.findByRecipeId(savedRecipe.getId())
-	            .stream().collect(Collectors.toMap(Step::getId, s -> s));
-	    
-	 //手順番号インデックスの初期化
-	    int stepIndex = 1;
-	    
-	//SteoDTOリストを回して各StepDTOを見ていく
-	    for (RecipeDTO.StepDTO stepDto : dto.getSteps()) {
-	     Step step;
-	        
-   //DTOで使われてて既存マップにもある＝既存ステップの使いまわしだった場合
+	            .stream().collect(Collectors.toMap(Step::getId, s -> s));	    
+    int stepIndex = 1;
+	for (RecipeDTO.StepDTO stepDto : dto.getSteps()) {
+	     Step step;	        
         if (stepDto.getId() != null && oldStepMap.containsKey(stepDto.getId())) {
             step = oldStepMap.remove(stepDto.getId());
-            
-    //新規のステップだった場合
         } else {
             step = new Step();
             step.setRecipe(savedRecipe);
         }
-      //画像処理
-	   //画像（削除）だった場合
+	//画像（削除）だった場合
         if (stepDto.isRemoveImg()) {
             Img oldImg = step.getImg();
             if (oldImg != null) {
                 step.setImg(null);
                 img_repository.delete(oldImg);  // ←ここでDBから削除
          }
-		            
-	   //画像（使う）だった場合
+	//画像（使う）だった場合
         }else{
             MultipartFile mediaFile = stepDto.getMediaFile();
             Long existing = stepDto.getExistingImgId();
@@ -228,15 +212,10 @@ public void editFromForm(RecipeDTO dto) throws IOException {
     //Stepオブジェクトを保存
     step_repository.save(step);
     }
-
-
-//材料   
+	//材料   
     //既存材料マップ作成
     Map<Long, Recipe_Ingredient> oldAmountMap = recipe_ingredient_repository.findByRecipeId(savedRecipe.getId())
             .stream().collect(Collectors.toMap(Recipe_Ingredient::getId, a -> a));
-
-    
-    //DTOリストを回して各DTOを見ていく
     for (RecipeDTO.Recipe_IngredientDTO recipe_ingredientDTO : dto.getIngredients()) {
     	Recipe_Ingredient newRecipe_Ingredient;
     	if (recipe_ingredientDTO.getId() != null && oldAmountMap.containsKey(recipe_ingredientDTO.getId())) {
@@ -248,17 +227,12 @@ public void editFromForm(RecipeDTO dto) throws IOException {
     	    newRecipe_Ingredient = recipe_ingredient_factory.build_recipe_ingredient(savedRecipe, ing, rawName, recipe_ingredientDTO);
     	}
     	recipe_ingredient_repository.save(newRecipe_Ingredient);
-
     }
-    
-
-    // 削除された材料・ステップ
     oldStepMap.values().forEach(step_repository::delete);
     oldAmountMap.values().forEach(recipe_ingredient_repository::delete);
-
-
-
 }
+
+
 	//本登録のみの材料リスト
 	public List<Ingredient> findAllIngs(){
 		List<Ingredient> data = ingredient_repository.findAll();
@@ -302,7 +276,6 @@ public void editFromForm(RecipeDTO dto) throws IOException {
 		return data;
 	}
 	public String addCate(String name) {
-		String result;
 		Optional<Category> existing = cate_repository.findByname(name);
 		if(existing.isEmpty()) {
 			Category new_category = new Category();

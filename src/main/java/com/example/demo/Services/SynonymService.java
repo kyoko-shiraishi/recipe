@@ -30,12 +30,7 @@ public class SynonymService {
 		}
 		
 	}
-	@Transactional(readOnly= true)
-	public List<Ingredient> all_ingredients(){
-		List<Ingredient> ing_list = ing_repository.findAll();
-		return ing_list;
-	}
-	
+
 	//Ingredient/SynonymテーブルのIngInfoDTOへの詰めなおし
 	@Transactional
 	public List<IngInfoDTO> convertToDTOs(List<Ingredient> ings){

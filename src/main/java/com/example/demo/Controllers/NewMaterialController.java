@@ -10,6 +10,7 @@ import org.springframework.validation.BindingResult;
 import com.example.demo.DTO.*;
 import com.example.demo.Services.RecipeService;
 import com.example.demo.Services.SynonymService;
+import com.example.demo.repository.*;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
@@ -21,17 +22,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class NewMaterialController {
 	public final RecipeService recipeService;
 	public final SynonymService synonymService;
-	public NewMaterialController(RecipeService recipeService,SynonymService synonymService) {
+	public final IngredientRepository ing_repository;
+	public NewMaterialController(RecipeService recipeService,SynonymService synonymService,
+			IngredientRepository ing_repository) {
 		this.recipeService = recipeService;
 		this.synonymService = synonymService;
+		this.ing_repository = ing_repository;
 	}
 	
 	@GetMapping(value="/mateMaster")
 	public ModelAndView showMateMaster(ModelAndView mav) {
 		mav.setViewName("mate_master");
-		List<Ingredient> all_ingredient = synonymService.all_ingredients();
+		List<Ingredient> all_ingredient = ing_repository.findAll();
 		List<IngInfoDTO> dtos = synonymService.convertToDTOs(all_ingredient);
+		List<Ingredient> temp_list = ing_repository.findByTemp();
 		mav.addObject("IngInfo",dtos);
+		mav.addObject("temp_list",temp_list);
 		return mav;
 	}
 	//マスタに材料追加

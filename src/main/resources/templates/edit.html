@@ -57,8 +57,9 @@
 
         <!-- ステップ0件の場合の初期ブロック -->
         <div th:if="${#lists.isEmpty(recipeDTO.steps)}" class="block">
-            <h3>手順1</h3>
+            <h3 class="step_title">手順1</h3>
             <input type="text" name="steps[0].content">
+			<h3 class="img_title">画像1</h3>
             <input type="file" name="steps[0].mediaFile" class="step_img">
             <img class="preview_img" src="">
             <button type="button" class="add">+</button>
@@ -68,10 +69,10 @@
 
         <!-- 既存ステップ -->
         <div th:each="step, iterStat : *{steps}" class="block">
-            <h3 th:text="'手順' + ${iterStat.index + 1}"></h3>
+            <h3 class="step_title" th:text="'手順' + ${iterStat.index + 1}"></h3>
             <input type="hidden" th:field="*{steps[__${iterStat.index}__].id}">
             <input type="text" th:field="*{steps[__${iterStat.index}__].content}">
-            <h3 th:text="'画像' + ${iterStat.index + 1}"></h3>
+            <h3 class="img_title" th:text="'画像' + ${iterStat.index + 1}"></h3>
             <input type="file" th:field="*{steps[__${iterStat.index}__].mediaFile}" class="step_img">
 			
             <input type="hidden" th:if="*{steps[__${iterStat.index}__].existingImgId != null}"
@@ -112,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (target.classList.contains('delete')) { target.closest('.block').remove(); IngredientRenumber(); }
         });
     }
-    function add(currentBlock){
+    function addIngredient(currentBlock){
         let arrIndex = document.querySelectorAll('#ingredient_container .block').length;
         const newBlock = document.createElement('div');
         newBlock.className = 'block';
@@ -135,7 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 作り方ステップ
+    // 作り方
     const stepContainer = document.querySelector('#step_container');
     if (stepContainer) {
         stepContainer.addEventListener('click', (event) => {
@@ -144,9 +145,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!block) return;
 
             if(target.classList.contains('add')) addStepAfter(block);
-            if(target.classList.contains('delete')) { block.remove(); renumberSteps(); }
-
-            // 画像削除
+            if(target.classList.contains('delete')) {
+				const blocks = stepContainer.querySelectorAll('.block');
+				if(blocks.length<=1)return;
+				 block.remove(); 
+				 renumberSteps(); 
+			 }
 			if(target.classList.contains('remove_img')) {
 			    const preview = block.querySelector('.preview_img');
 			    const fileInput = block.querySelector('input[type=file].step_img');
@@ -167,8 +171,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const newBlock = document.createElement('div');
         newBlock.className='block';
         newBlock.innerHTML=`
-            <h3>手順${stepIndex+1}</h3>
+            <h3 class="step_title">手順${stepIndex+1}</h3>
             <input type="text" name="steps[${stepIndex}].content">
+			<h3 class="img_title">画像${stepIndex+1}</h3>
             <input type="file" name="steps[${stepIndex}].mediaFile" class="step_img">
             <img class="preview_img" src="">
             <button type="button" class="add">＋</button>
@@ -183,9 +188,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function renumberSteps(){
         const blocks = stepContainer.querySelectorAll('.block');
         blocks.forEach((block,index)=>{
-            const title = block.querySelector('h3'); if(title) title.textContent=`手順${index+1}`;
-            const content = block.querySelector('input[name$=".content"]'); if(content) content.name=`steps[${index}].content`;
-            const img = block.querySelector('input[name$=".mediaFile"]'); if(img) img.name=`steps[${index}].mediaFile`;
+			const Steptitle = block.querySelector('.step_title');
+			const Imgtitle = block.querySelector('.img_title');
+			if(Steptitle) Steptitle.textContent=`手順${index+1}`;
+			if(Imgtitle)Imgtitle.textContent = `画像${index+1}`;
+            const content = block.querySelector('input[name$=".content"]'); 
+			if(content) content.name=`steps[${index}].content`;
+            const img = block.querySelector('input[name$=".mediaFile"]');
+			if(img) img.name=`steps[${index}].mediaFile`;
         });
     }
 
@@ -198,8 +208,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const file = e.target.files[0];
             if(file){
                 const objectURL = URL.createObjectURL(file); 
-					previewImg.src = objectURL;
-					previewImg.style.display = 'block'; 
+					img.src = objectURL;
+					img.style.display = 'block'; 
 
             } else {
 				img.src="";
